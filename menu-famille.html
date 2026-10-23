@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Menu de la semaine et courses</title>
+<style>
+:root{--bg:#f1f4ec;--cd:#fff;--tx:#1f2a17;--mu:#66725a;--bd:#d5dccb;--ac:#4f7a1f;--rd:#b42318;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#12170f;--cd:#1b2216;--tx:#e9efdf;--mu:#9aa88b;--bd:#2d3825;--ac:#9bd15a;--rd:#f28b82}}
+:root[data-theme=dark]{--bg:#12170f;--cd:#1b2216;--tx:#e9efdf;--mu:#9aa88b;--bd:#2d3825;--ac:#9bd15a;--rd:#f28b82}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:6px;padding:8px;background:var(--bg)}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:8px;padding:7px 9px}
+button{cursor:pointer}nav button{flex:1;font-weight:700}
+.pri,nav .on{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+main{padding:0 8px 24px;max-width:560px;margin:auto}
+.cd{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px;margin-bottom:8px}
+.top,.row,.wk{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.wk{margin-bottom:8px}.acts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.dn{font-family:Georgia,serif;font-size:17px;text-transform:capitalize}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--bd);color:var(--mu)}
+.AM{background:#f6c453;color:#3b2a00;border-color:#f6c453}.PM{background:#9ec5ee;color:#0b2a4a;border-color:#9ec5ee}
+.sl{border-top:1px solid var(--bd);margin-top:8px;padding-top:6px}.sl select{width:100%;margin-top:4px}
+small,.mu{color:var(--mu);font-size:12px}
+label.ck{display:flex;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--bd)}
+label.ck input{width:18px;height:18px;padding:0}label.ck button{margin-left:auto}
+.w{width:100%;box-sizing:border-box}
+.big{width:100%;margin:4px 0 12px;padding:11px}
+.po{display:none}.sheet{grid-template-columns:repeat(4,1fr);gap:8px}.bx{border:1px dashed #8a9a6a;border-radius:4px;padding:6px;min-height:130px}.bx h3{margin:0 0 4px;text-align:center;font:700 13px Georgia,serif;color:#4f7a1f;letter-spacing:.04em}.bx p{margin:2px 0;font:15px/1.25 "Segoe Print","Bradley Hand",cursive}.bx small{color:#4f7a1f;font-size:11px}
+@media print{nav,.np{display:none!important}.po{display:block}.sheet{display:grid!important}@page{size:A4 landscape;margin:10mm}body{background:#fff;color:#000}.cd{break-inside:avoid;border-color:#999}}
+</style></head><body>
+<nav><button id="t1" onclick="go('m')">Menu</button><button id="t2" onclick="go('c')">Courses</button><button id="t3" onclick="go('p')">Plats</button></nav>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s);
+const R=['Fruits et légumes','Boucherie et volaille','Poissonnerie','Charcuterie et traiteur','Crémerie et œufs','Fromages','Surgelés','Épicerie','Pain et boulangerie','Boissons','Ménager, hygiène et cuisine','Petit-déjeuner'];
+const DEF=`Gratin dauphinois|SW|pommes de terre:0,crème:4,emmental râpé:5
+Gratin de chou-fleur|SWC|chou-fleur:0,emmental râpé:5,crème:4
+Lasagnes|SW|viande hachée:1,pâtes à lasagnes:7,sauce tomate:7,béchamel:7,emmental râpé:5
+Spaghettis bolo|SWQ|spaghettis:7,viande hachée:1,sauce tomate:7,oignon:0
+Hachis parmentier|SW|viande hachée:1,pommes de terre:0,oignon:0,emmental râpé:5
+Cordon bleu maison, riz|SW|escalopes de poulet:1,jambon:3,tranches de fromage:5,chapelure:7,œufs:4,riz:7
+Nuggets maison, frites|SWQ|escalopes de poulet:1,chapelure:7,œufs:4,frites:6
+Poulet rôti, pommes de terre|SW|poulet entier:1,pommes de terre:0
+Paupiettes, riz|SW|paupiettes:1,riz:7
+Filet mignon, riz|SW|filet mignon:1,riz:7
+Saucisses de Toulouse, riz|SWQ|saucisses de Toulouse:1,riz:7
+Saumon, tagliatelles épinards|S|saumon:2,tagliatelles:7,épinards:0,crème:4
+Poisson pané, haricots verts|SQ|poisson pané:6,haricots verts:0
+Raviolis|SQC|raviolis frais:3
+Quiche lorraine|SQWC|pâte brisée:4,lardons:3,œufs:4,crème:4,emmental râpé:5
+Quiche aux légumes|SWC|pâte brisée:4,courgettes:0,œufs:4,crème:4
+Tarte aux épinards|SWC|pâte feuilletée:4,épinards:0,œufs:4,crème:4
+Tarte flambée|SQW|pâte à tarte flambée:4,crème:4,lardons:3,oignon:0
+Pizza|SQW|pizza:6
+Omelette lardons-jambon|SQC|œufs:4,lardons:3,jambon:3
+Œufs cocotte|SQC|œufs:4,crème:4
+Œufs à la coque, mouillettes|SQC|œufs:4,pain:8
+Croque-monsieur|SQC|pain de mie:8,jambon:3,tranches de fromage:5
+Soupe maison|SQC|légumes à soupe:0
+Soupe en brique|SQC|soupe en brique:7
+Salade de pommes de terre, cervelas|SQC|pommes de terre:0,cervelas:3
+Pommes de terre vapeur, knackis|SQC|pommes de terre:0,knackis:3
+Salade de riz composée|SQLC|riz:7,thon:7,tomates:0,œufs:4
+Salade verte composée|CQ|salade verte:0,tomates:0
+Ratatouille, riz|SWC|courgettes:0,aubergines:0,poivrons:0,tomates:0,oignon:0,riz:7
+Hot dog maison|SW|pains à hot dog:8,saucisses de Francfort:3,moutarde:7,ketchup:7
+Burger maison|SW|pains à burger:8,steaks hachés:1,tranches de fromage:5,salade verte:0,tomates:0
+Frites + nuggets|W|nuggets:6,frites:6
+McDo|W|
+Chez Papy|E|
+Pasta box|LR|pasta box:3
+Taboulé en barquette|LR|taboulé en barquette:3
+Salade de riz ou de pâtes en barquette|LR|salade en barquette:3
+Sandwich ou wrap|LR|sandwich ou wrap:3
+Restes de la veille|LCW|
+Gratin de courgettes|SWC|courgettes:0,crème:4,emmental râpé:5,œufs:4
+Gratin de pâtes au jambon|SWQ|pâtes:7,jambon:3,crème:4,emmental râpé:5
+Croque-madame|SQC|pain de mie:8,jambon:3,tranches de fromage:5,œufs:4
+Tartiflette|SW|pommes de terre:0,lardons:3,oignon:0,reblochon:5,crème:4
+Poulet au curry, riz|SW|escalopes de poulet:1,crème:4,curry:7,oignon:0,riz:7
+Poulet à la crème, pâtes|SW|escalopes de poulet:1,crème:4,champignons:0,pâtes:7
+Blanquette de veau, riz|SW|blanquette de veau:1,carottes:0,crème:4,riz:7
+Chili con carne, riz|SW|viande hachée:1,haricots rouges:7,tomates concassées:7,oignon:0,riz:7
+Boulettes de bœuf, pâtes|SWQ|viande hachée:1,sauce tomate:7,pâtes:7,œufs:4
+Rôti de porc, haricots verts|SW|rôti de porc:1,haricots verts:0
+Côtes de porc, purée|SQW|côtes de porc:1,pommes de terre:0,lait:4,beurre:4
+Steak haché, frites|SQW|steaks hachés:1,frites:6
+Saucisses, purée|SQW|saucisses:1,pommes de terre:0,lait:4,beurre:4
+Cuisses de poulet, riz|SW|cuisses de poulet:1,riz:7
+Jambon, purée|SQ|jambon:3,pommes de terre:0,lait:4,beurre:4
+Pâtes carbonara|SQW|pâtes:7,lardons:3,crème:4,œufs:4,emmental râpé:5
+Pâtes au saumon fumé|SQ|pâtes:7,saumon fumé:2,crème:4
+Macaronis au fromage|SQW|macaronis:7,emmental râpé:5,lait:4,beurre:4,farine:7
+Risotto aux champignons|SC|riz:7,champignons:0,oignon:0,parmesan:5,bouillon:7
+Riz cantonais|SQWC|riz:7,jambon:3,œufs:4,petits pois carottes:6
+Poêlée de légumes et œufs|SQC|courgettes:0,poivrons:0,œufs:4
+Omelette aux champignons|SQC|œufs:4,champignons:0
+Omelette au fromage|SQC|œufs:4,emmental râpé:5
+Œufs brouillés, jambon|SQC|œufs:4,jambon:3
+Tarte au thon et tomates|SC|pâte brisée:4,thon:7,tomates:0,œufs:4,crème:4
+Tarte chèvre-courgettes|SC|pâte feuilletée:4,chèvre:5,courgettes:0,œufs:4,crème:4
+Pizza maison|SWE|pâte à pizza:4,sauce tomate:7,jambon:3,mozzarella:5,champignons:0
+Quiche au saumon|SWC|pâte brisée:4,saumon:2,œufs:4,crème:4
+Wraps au poulet|SWQ|wraps:7,escalopes de poulet:1,salade verte:0,tomates:0,tranches de fromage:5
+Tacos maison|SW|galettes:7,viande hachée:1,salade verte:0,tomates:0,emmental râpé:5
+Fajitas au poulet|SW|wraps:7,escalopes de poulet:1,poivrons:0,oignon:0
+Brochettes de poulet, riz|SW|brochettes de poulet:1,riz:7
+Poisson pané, purée|SQ|poisson pané:6,pommes de terre:0,lait:4,beurre:4
+Cabillaud, riz, haricots verts|SW|cabillaud:2,riz:7,haricots verts:0
+Gratin de poisson|SW|colin:2,crème:4,emmental râpé:5,pommes de terre:0
+Velouté de potiron|SQC|potiron:0,crème:4,oignon:0
+Soupe de carottes|SQC|carottes:0,pommes de terre:0,oignon:0
+Salade de pâtes composée|SQLC|pâtes:7,thon:7,tomates:0,maïs:7,œufs:4
+Lasagnes prêtes à réchauffer|LR|lasagnes préparées:3
+Hachis parmentier prêt|LR|hachis parmentier préparé:3
+Gratin dauphinois prêt|LR|gratin dauphinois préparé:3
+Tortellini sauce tomate prêts|LR|tortellini frais:3,sauce tomate:7
+Riz cantonais prêt|LR|riz cantonais préparé:3
+Blanquette de veau prête, riz|LR|blanquette préparée:3,riz:7
+Poulet rôti et frites prêts|LR|poulet rôti préparé:3,frites:6
+Quiche lorraine prête|LR|quiche préparée:3
+Pizza surgelée|LR|pizza:6
+Raviolis en boîte|LR|raviolis en boîte:7`.split('\n').map((l,i)=>{const[n,t,s]=l.split('|');return{id:'d'+i,n,t,it:(s||'').split(',').filter(Boolean).map(x=>{const[a,b]=x.split(':');return[a,+b]})}});
+const BASE=[['fromage',5],['crème de Saint Agur',5],['emmental râpé',5],['lait',4],['beurre',4],['œufs',4],['pain',8],['pain de mie',8],['pâtes',7],['riz',7],['farine',7],['huile',7],['sel',7],['épices',7],['fond de veau',7],['papier cuisson',10],['papier alu',10],['fruits',0],['yaourts et desserts lactés',4],['compotes',7],['biscuits',7],['jus de fruits',9],['liquide vaisselle',10],['lessive',10],['sacs-poubelle',10],['papier toilette',10],['essuie-tout',10],['hygiène (douche, dentifrice…)',10],['entretien (sol, vitres…)',10],['acide citrique',10],['bicarbonate de soude',10]];
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const fr=d=>d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function sow(d){const x=new Date(d),n=(x.getDay()+6)%7;x.setDate(x.getDate()-n);x.setHours(0,0,0,0);return x}
+function shift(d){if((d.getMonth()==0&&d.getDate()==1)||(d.getMonth()==11&&d.getDate()==31))return'OFF';const w=Math.round((sow(d)-sow(new Date(2025,11,29)))/6048e5),n=(d.getDay()+6)%7;return w%2==0?(n<=3?'AM':'OFF'):(n<=4?'PM':'OFF')}
+let S={m:{},v:{},x:{},c:{},rm:{},D:null,vac:{},sl:{},ord:{},dk:{},dm:{}},tab='m',F=null,DEL=null,BX='';
+const T0=new Date();let wk=sow(T0);if(T0.getDay()==0)wk=add(wk,7);
+try{Object.assign(S,JSON.parse(localStorage.getItem('menufam1')||'{}'))}catch(e){}
+if(S.D){DEF.slice(S.dn||40).forEach(x=>{if(!S.D.some(y=>y.id==x.id))S.D.push({...x})})}S.dn=DEF.length;
+const save=()=>{try{localStorage.setItem('menufam1',JSON.stringify(S))}catch(e){}};
+const D=()=>S.D||DEF,dd=id=>D().find(x=>x.id==id);
+const days=()=>[...Array(7)].map((_,i)=>add(wk,i));
+const slots=d=>slots0(d).filter(s=>s!='C'||!dkA('a'+iso(d)));
+const dkA=ds=>{const k=S.dk[ds];return !!(k&&k.on)};
+const exc=d=>{const x=[dkA(iso(d))&&'Cyril',dkA('a'+iso(d))&&'Aurore'].filter(Boolean);return x.length?'sans '+x.join(' et '):''};
+const labF=(s,d)=>{let t=LB[s];if(s=='M'&&dkA('a'+iso(d)))t='Midi, Laura et Camille';else if(s=='E'||s=='S'){const e=exc(d);if(e)t+=' ('+e+')'}return t+(tag(s,d)=='Q'?', rapide (tir à l\'arc)':'')};
+const slots0=d=>{const w=d.getDay();return S.vac[iso(d)]?['E','S']:w==3?['M','S']:(w==0||w==6)?['E','S']:w==5?['L','S']:['L','C','S']};
+const tag=(s,d)=>s=='S'?(d.getDay()==4&&shift(d)=='PM'&&!S.vac[iso(d)]?'Q':'S'):s=='M'?'W':s=='L'?'L'+iso(d):s;
+const LB={L:'Midi, Laura',C:'Midi, Aurore',M:'Midi, Laura, Camille et Aurore',E:'Midi, toute la famille',S:'Soir'};
+const opts=t=>D().filter(x=>t[0]=='L'?(x.t.includes('L')||x.t.includes('R')||x.t.includes('Q')):(x.t.includes(t)||(t=='E'&&x.t.includes('W')))).map(x=>x.id);
+function pickL(ds,used){const[a,b,c]=ds.split('-').map(Number),sh=shift(new Date(a,b-1,c)),all=D(),R_=all.filter(x=>x.t.includes('R')).map(x=>x.id),P_=all.filter(x=>x.t.includes('Q')&&!x.t.includes('R')&&!x.t.includes('L')).map(x=>x.id),RS=all.filter(x=>x.n=='Restes de la veille').map(x=>x.id);let pool;
+ if(sh=='AM')pool=R_.concat(RS);else if(sh=='PM'){const cur=days().filter(x=>iso(x)!=ds&&shift(x)=='PM').map(x=>dd((S.m[iso(x)]||{}).L)).filter(Boolean),nR=cur.filter(x=>x.t.includes('R')).length,nP=cur.length-nR;pool=nR<nP?R_:nR>nP?P_:(Math.random()<.5?R_:P_)}else pool=all.filter(x=>x.t.includes('L')||x.t.includes('R')).map(x=>x.id);
+ let l=pool.filter(i=>!used.includes(i));if(!l.length)l=pool;return l[Math.floor(Math.random()*l.length)]}
+function pick(t,used){if(t[0]=='L')return pickL(t.slice(1),used);let c=opts(t).filter(i=>!used.includes(i));if(!c.length)c=opts(t);return c[Math.floor(Math.random()*c.length)]}
+const usedWk=()=>{const u=[];days().forEach(d=>Object.values(S.m[iso(d)]||{}).forEach(i=>u.push(i)));return u};
+function fill(){days().forEach(d=>{const m=S.m[iso(d)]||(S.m[iso(d)]={});slots(d).forEach(s=>{if(m[s]==null||!dd(m[s]))m[s]=pick(tag(s,d),usedWk())})});save();render()}
+function rnd(ds,s){const[a,b,c]=ds.split('-').map(Number),m=S.m[ds]||(S.m[ds]={});m[s]=pick(tag(s,new Date(a,b-1,c)),usedWk().concat([m[s]]));save();render()}
+function setD(ds,s,v){if(v){(S.m[ds]||(S.m[ds]={}))[s]=v;save();render()}}
+function tg(b){const s=b.closest('.sl').querySelector('select');s.hidden=!s.hidden}
+function vac(ds,on){if(on)S.vac[ds]=1;else delete S.vac[ds];const[a,b,c]=ds.split('-').map(Number),d=new Date(a,b-1,c),m=S.m[ds]||(S.m[ds]={});['L','C','M','E'].forEach(k=>{if(!slots(d).includes(k))delete m[k]});slots(d).forEach(s=>{if(m[s]==null||!dd(m[s]))m[s]=pick(tag(s,d),usedWk())});save();render()}
+function sheetH(ds){const nm=(d,s)=>{const m=S.m[iso(d)]||{},x=dd(m[s]),pv=S.m[iso(add(d,-1))]||{};if(!x)return'';if(s=='L'){const lk=dkLink(iso(d),x);if(lk)return lk.n}return x.n=='Restes de la veille'&&pv.S&&dd(pv.S)?'Restes : '+dd(pv.S).n:x.n};
+ const bx=d=>{const sl=slots(d),lb={L:'Laura : ',C:'Aurore : ',M:'',E:''};return `<div class="bx"><h3>${d.toLocaleDateString('fr-FR',{weekday:'long'}).toUpperCase()}</h3><small>Midi :</small>${['L','C','M','E'].filter(k=>sl.includes(k)).map(k=>`<p>${lb[k]}${esc(nm(d,k))}</p>`).join('')}<small>Soir :</small><p>${esc(nm(d,'S'))}</p><small>${exc(d)}</small></div>`};
+ return `<div class="po sheet"><h2 style="grid-column:1/-1;margin:0">Menu du ${fr(ds[0])} au ${fr(ds[6])}</h2>${ds.map(bx).join('')}<div class="bx" style="border:0;text-align:right;align-self:end">Bon appétit !</div></div>`}
+let SM='l',PO=[];
+const selOf=(k,n,o)=>{const v=S.sl[k+'|'+n];return v==null?o.c>0:!!v};
+const rank=(n,r)=>{n=n.replace(/( \d+ g| ×\d+)? \((Cyril|Aurore|Laura)\)$/,'');return S.ord[n]!=null?S.ord[n]:1e6+r*1e3};
+function catalog(){const M={};D().forEach(x=>x.it.forEach(([n,r])=>{M[n]=M[n]||{r,c:0}}));BASE.forEach(([n,r])=>{M[n]=M[n]||{r,c:0}});DK.forEach(x=>x.it.forEach(([n])=>{M[n]=M[n]||{r:DR[n]??0,c:0}}));['skyr ou yaourt 0%','pomme ou poire'].forEach(n=>{M[n]=M[n]||{r:DR[n]??0,c:0}});V.forEach(v=>{M[v[0]]=M[v[0]]||{r:v[2],c:0}});Object.values(S.x).forEach(l=>l.forEach(([n,r])=>{M[n]=M[n]||{r,c:0}}));return M}
+const byRank=M=>Object.entries(M).sort((a,b)=>rank(a[0],a[1].r)-rank(b[0],b[1].r));
+const chosen=()=>{const k=iso(wk);return byRank(items()).filter(([n,o])=>selOf(k,n,o))};
+function addForm(){return `<div class="cd np"><b>Ajouter un produit</b><input type="text" id="an" class="w" placeholder="Produit" style="margin:6px 0"><select id="ar" class="w">${R.map((a,i)=>`<option value="${i}">${a}</option>`).join('')}</select><select id="ap" class="w" style="margin-top:6px"><option value="">Petit-déjeuner : pour qui ?</option><option>Laura</option><option>Camille</option><option>Aurore</option><option>Cyril</option></select><button class="pri w" style="margin-top:6px" onclick="addX2()">Ajouter</button></div>`}
+function addX2(){const k=iso(wk);let n=$('#an').value.trim(),r=+$('#ar').value,p=$('#ap').value;if(!n)return;if(r==11&&p)n=p+' : '+n;delete S.rm[k+'|'+n];S.sl[k+'|'+n]=1;(S.x[k]||(S.x[k]=[])).push([n,r]);save();render()}
+function parcV(){const all=byRank(catalog());return `<div class="cd"><small>Dans le magasin, coche chaque article au moment où tu le croises. L'ordre est enregistré pour toutes tes listes.</small><div class="acts" style="margin:8px 0 0"><button class="pri" id="svo" data-t="${all.length}" onclick="saveO()">Enregistrer l'ordre (${PO.length}/${all.length})</button><button onclick="PO=[];render()">Recommencer</button></div></div><div class="cd">${all.map(([n,o])=>`<label class="ck"><input type="checkbox" data-n="${esc(n)}"${PO.includes(n)?' checked':''} onchange="po(this)"> ${esc(n)} <small>${R[o.r]}</small></label>`).join('')}</div>`}
+function po(el){const n=el.dataset.n;PO=PO.filter(x=>x!=n);if(el.checked)PO.push(n);const b=$('#svo');b.textContent='Enregistrer l\'ordre ('+PO.length+'/'+b.dataset.t+')'}
+function saveO(){const rest=byRank(catalog()).map(a=>a[0]).filter(n=>!PO.includes(n)),o={};PO.concat(rest).forEach((n,i)=>o[n]=i);S.ord=o;save();SM='l';PO=[];msg('Ordre enregistré');render()}
+function shopV(){const k=iso(wk);if(!S.v[k])return '<div class="cd"><small>Valide d\'abord le menu de la semaine dans Menu.</small></div>';
+ const bar=`<div class="acts np"><button class="${SM=='l'?'pri':''}" onclick="SM='l';render()">Ma liste</button><button class="${SM=='s'?'pri':''}" onclick="SM='s';render()">Choisir les articles</button><button class="${SM=='p'?'pri':''}" onclick="SM='p';PO=[];render()">Parcours du magasin</button></div>`;
+ if(SM=='p')return bar+parcV();
+ const M=items();
+ if(SM=='s')return bar+R.map((a,ri)=>{const l=sorted(M,ri);return l.length?`<div class="cd"><b>${a}</b>${l.map(([n,o])=>`<label class="ck"><input type="checkbox" data-n="${esc(n)}"${selOf(k,n,o)?' checked':''} onchange="S.sl[iso(wk)+'|'+this.dataset.n]=this.checked?1:0;save()"> ${esc(n)}${o.c>1?' ×'+o.c:''}</label>`).join('')}</div>`:''}).join('')+addForm();
+ const L=chosen();
+ return bar+`<div class="cd"><b>Courses du ${fr(wk)} au ${fr(add(wk,6))}</b> <small>${L.length} articles</small><div class="acts np" style="margin:8px 0 0"><button class="pri" onclick="dlT()">Télécharger (texte)</button><button onclick="cpL()">Copier</button></div></div>`+(L.length?`<div class="cd">${L.map(([n,o])=>`<label class="ck"><input type="checkbox" data-n="${esc(n)}"${S.c[k+'|'+n]?' checked':''} onchange="S.c[iso(wk)+'|'+this.dataset.n]=this.checked;save()"> ${esc(n)}${o.c>1?' ×'+o.c:''} <small>${R[o.r]}</small></label>`).join('')}</div>`:'<div class="cd"><small>Aucun article choisi. Va dans Choisir les articles.</small></div>')}
+function txt(){const k=iso(wk);return 'Liste de courses du '+fr(wk)+' au '+fr(add(wk,6))+'\n\n'+chosen().map(([n,o])=>(S.c[k+'|'+n]?'☑ ':'☐ ')+n+(o.c>1?' ×'+o.c:'')).join('\n')}
+const PH={at:{n:'Attaque',pp:1,c:1.5},pp:{n:'Croisière PP (protéines pures)',pp:1,c:2},pl:{n:'Croisière PL (protéines + légumes)',pp:0,c:2},co:{n:'Consolidation',pp:0,c:2.5,f:1},st:{n:'Stabilisation',pp:0,c:3,f:1}};
+const VG=new Set('brocoli,courgettes,tomates,salade,champignons,épinards,poivrons,haricots verts,asperges,chou-fleur,choux,endives,radis,céleri,oignon'.split(','));
+const DR={poulet:1,dinde:1,'porc maigre':1,'bœuf maigre':1,veau:1,cabillaud:2,colin:2,saumon:2,'merlu ou lieu':2,crevettes:2,'jambon blanc dégraissé':3,bresaola:3,'thon nature':7,'fromage blanc 0%':4,'œufs':4,'skyr ou yaourt 0%':4};
+const DK=`Poulet poêlé citron-herbes|15|0|poulet,150,1 blanc
+Omelette jambon blanc|10|0|œufs,180,3 œufs;jambon blanc dégraissé,60,2 tranches
+Thon et œufs durs, moutarde|10|0|thon nature,110,1 boîte;œufs,120,2 œufs
+Cabillaud au four citron|25|1|cabillaud,200,1 pavé
+Colin poêlé ail-persil|15|0|colin,200,1 filet
+Escalope de dinde grillée|10|0|dinde,150,1 escalope
+Steak de bœuf maigre|12|0|bœuf maigre,150,1 steak
+Escalope de veau moutarde|15|0|veau,150,1 escalope
+Crevettes à l'ail poêlées|10|0|crevettes,150,10 pièces env.
+Bresaola et fromage blanc aux herbes|5|0|bresaola,60,6 tranches;fromage blanc 0%,150,3/4 de pot
+Rôti de porc maigre|45|1|porc maigre,180,2 tranches
+Saumon au four|25|1|saumon,150,1 pavé
+Merlu ou lieu en papillote|25|1|merlu ou lieu,200,1 filet
+Poulet sauté brocoli-ail|20|1|poulet,150,1 blanc;brocoli,200,1 bol
+Omelette champignons-épinards|12|0|œufs,180,3 œufs;champignons,100,1 poignée;épinards,100,1 poignée
+Salade thon, tomates, œuf|10|0|thon nature,110,1 boîte;tomates,150,2 tomates;salade,80,1 bol;œufs,60,1 œuf
+Velouté de courgettes à l'ail, jambon|20|1|courgettes,300,2 courgettes;jambon blanc dégraissé,60,2 tranches
+Dinde aux poivrons|20|0|dinde,150,1 escalope;poivrons,150,1 poivron
+Sauté de bœuf aux champignons|25|1|bœuf maigre,150,1 steak;champignons,150,1 barquette
+Cabillaud et haricots verts|20|0|cabillaud,200,1 pavé;haricots verts,200,1 bol
+Crevettes et asperges poêlées|15|0|crevettes,150,10 pièces env.;asperges,200,8 pointes env.
+Veau mijoté au chou-fleur|35|1|veau,150,1 escalope;chou-fleur,250,1 bol
+Salade crevettes, endives, radis|10|0|crevettes,120,8 pièces env.;endives,100,1 endive;radis,50,5 radis
+Soupe de choux et céleri, jambon|25|1|choux,250,1 bol;céleri,100,2 branches;jambon blanc dégraissé,60,2 tranches
+Colin aux épinards|20|0|colin,200,1 filet;épinards,200,1 grosse poignée
+Poulet mijoté tomates-oignon|30|1|poulet,150,1 blanc;tomates,250,3 tomates;oignon,50,1/2 oignon
+Salade bresaola et endives|10|0|bresaola,60,6 tranches;endives,100,1 endive;salade,80,1 bol
+Saumon et brocoli vapeur|25|0|saumon,150,1 pavé;brocoli,200,1 bol`.split('\n').map((l,i)=>{const[n,t,b,s]=l.split('|');return{id:i,n,t:+t,b:+b,it:s.split(';').map(x=>{const[f,g,p]=x.split(',');return[f,+g,p]})}});
+DK.forEach(r=>r.pl=r.it.some(x=>VG.has(x[0])));
+const dkd=i=>i==null?null:DK[i];
+const dkOpts=ds=>DK.filter(r=>!PH[S.dk[ds].ph].pp||!r.pl).map(r=>r.id);
+function dkPick(ds,s,av){const k=S.dk[ds],[a,b,c]=ds.replace(/^a/,'').split('-').map(Number),sh=ds[0]=='a'||S.vac[ds]?'OFF':shift(new Date(a,b-1,c)),L=sh=='AM'?15:sh=='PM'?(s=='d'?30:10):999,ok=r=>!PH[k.ph].pp||!r.pl;let l=DK.filter(r=>ok(r)&&(r.t<=L||r.b)&&!av.includes(r.id));if(!l.length)l=DK.filter(ok);return l[Math.floor(Math.random()*l.length)].id}
+function dkEns(ds){const m=S.dm[ds]||(S.dm[ds]={}),k=S.dk[ds];
+ if(ds[0]=='a'){const c=S.dk[ds.slice(1)],cm=S.dm[ds.slice(1)];if(c&&c.on&&c.ph==k.ph&&cm)dkSl(ds).forEach(s=>{if(!(m.o&&m.o[s])&&cm[s]!=null)m[s]=cm[s]})}dkSl(ds).forEach(s=>{if(m[s]==null||(PH[k.ph].pp&&DK[m[s]].pl))m[s]=dkPick(ds,s,[m[s=='d'?'n':'d']])})}
+function dkSame(ds,s){const m=S.dm[ds];if(m.o)delete m.o[s];save();render()}
+function dkTog(ds,on){const k=S.dk[ds]||(S.dk[ds]={});k.on=on?1:0;const lk=ds[0]=='a'?'lpa':'lp';if(on&&!k.ph&&S[lk]){k.ph=S[lk];dkEns(ds)}save();render()}
+function dkPh(ds,v){S.dk[ds].ph=v;if(v){S[ds[0]=='a'?'lpa':'lp']=v;dkEns(ds)}save();render()}
+function dkRnd(ds,s){const m=S.dm[ds];if(ds[0]=='a')(m.o||(m.o={}))[s]=1;m[s]=dkPick(ds,s,[m[s],m[s=='d'?'n':'d']]);save();render()}
+function dkSet(ds,s,v){if(v){if(ds[0]=='a'){const m=S.dm[ds];(m.o||(m.o={}))[s]=1}S.dm[ds][s]=+v;save();render()}}
+function tg2(b){const s=b.closest('.row').nextElementSibling.nextElementSibling;s.hidden=!s.hidden}
+const DKREC=`Sors le poulet 10 min avant et sale-le légèrement;Chauffe une poêle antiadhésive sans matière grasse à feu moyen;Cuis le blanc 6 à 7 min par face jusqu'à ce que le jus soit clair;Arrose de citron et parsème d'herbes hors du feu#Se garde 3 jours au frigo, bon froid en gamelle.
+Bats les œufs avec sel, poivre et herbes;Coupe le jambon en lanières;Verse les œufs dans une poêle antiadhésive chaude et ajoute le jambon;Laisse prendre 2 min puis plie l'omelette#À manger tout de suite.
+Cuis les œufs 10 min dans l'eau bouillante puis refroidis-les;Égoutte et émiette le thon;Écale et coupe les œufs en quartiers;Assaisonne avec moutarde, citron et poivre#Les œufs durs peuvent être cuits la veille.
+Préchauffe le four à 180 °C;Dépose le pavé sur du papier cuisson avec citron, sel et herbes;Ferme en papillote;Enfourne 15 à 20 min selon l'épaisseur#Cuis plusieurs pavés d'un coup, 2 jours au frigo.
+Sèche le filet et sale-le;Chauffe une poêle antiadhésive à feu moyen;Cuis 3 à 4 min par face;Ajoute l'ail haché et le persil en fin de cuisson#Le colin cuit vite, ne le dessèche pas.
+Aplatis légèrement l'escalope;Assaisonne avec sel, poivre et herbes;Fais griller à la poêle antiadhésive 4 à 5 min par face;Vérifie que le centre n'est plus rosé#Prête en 10 min.
+Sors le steak 10 min avant;Chauffe fortement une poêle antiadhésive;Saisis 2 min par face pour une cuisson à point;Sale et poivre après cuisson, laisse reposer 2 min#Ne pique pas la viande, elle garde son jus.
+Assaisonne l'escalope avec sel et poivre;Cuis-la 3 à 4 min par face dans une poêle antiadhésive;Retire-la et déglace avec un filet d'eau et une cuillère de moutarde;Remets la viande 1 min dans la sauce#Variante : de l'échalote ciselée pendant la cuisson.
+Décongèle et sèche les crevettes;Fais chauffer une poêle antiadhésive;Cuis les crevettes 2 à 3 min par face;Ajoute l'ail haché, le citron et le persil juste avant de servir#Ne les cuis pas trop, elles deviennent sèches.
+Mélange le fromage blanc avec herbes, sel et poivre;Ajoute un peu d'ail ou d'échalote haché;Dispose la bresaola dans l'assiette;Sers avec le fromage blanc#Sans cuisson, 5 min.
+Préchauffe le four à 180 °C;Assaisonne le rôti avec sel, poivre, ail et herbes;Enfourne 35 à 40 min, jusqu'à un jus clair;Laisse reposer 10 min avant de trancher#À faire le week-end pour 3 repas, 3 jours au frigo.
+Préchauffe le four à 180 °C;Dépose le pavé sur du papier cuisson avec citron et herbes;Enfourne 12 à 15 min;La chair doit se détacher à la fourchette#Mieux vaut le cuire le jour même.
+Préchauffe le four à 180 °C;Place le filet sur du papier cuisson avec citron, sel et herbes;Ferme la papillote;Enfourne 15 à 20 min#Fais 2 filets d'un coup, 2 jours au frigo.
+Coupe le brocoli en bouquets et cuis-les 5 min à la vapeur;Coupe le poulet en dés;Fais-le dorer 6 à 7 min dans une poêle antiadhésive;Ajoute le brocoli et l'ail haché, mélange 2 min avec un filet d'eau#Idéal en batch, 3 jours au frigo.
+Fais revenir champignons émincés et épinards dans une poêle antiadhésive jusqu'à évaporation de l'eau;Bats les œufs avec sel et poivre;Verse-les sur les légumes;Laisse prendre 2 à 3 min et plie#Les légumes peuvent être cuits la veille.
+Cuis l'œuf dur 10 min;Coupe les tomates en quartiers;Mets la salade, les tomates et le thon égoutté;Ajoute l'œuf et assaisonne avec vinaigre, moutarde et herbes#Sans cuisson, 10 min.
+Fais revenir l'ail dans une casserole avec un peu d'eau;Ajoute les courgettes en rondelles et couvre d'eau;Cuis 15 min puis mixe;Ajoute le jambon en lamelles au moment de servir#Se conserve 3 jours et se réchauffe très bien.
+Émince les poivrons et coupe la dinde en lanières;Fais dorer la dinde 5 min dans une poêle antiadhésive;Ajoute les poivrons et couvre;Laisse cuire 10 min en remuant, avec un filet d'eau si ça accroche#Bonne en gamelle, 2 jours au frigo.
+Coupe le bœuf en dés et émince les champignons;Fais dorer le bœuf 5 min dans une poêle antiadhésive;Ajoute les champignons et un peu d'eau;Mijote à couvert 15 min puis sale et poivre#Meilleur le lendemain, 3 jours au frigo.
+Cuis les haricots verts 8 à 10 min à la vapeur;Cuis le cabillaud au four 15 min à 180 °C avec du citron;Assemble le tout;Assaisonne avec citron, sel, poivre et persil#Les haricots peuvent être cuits à l'avance.
+Casse le bas des asperges et cuis-les 8 min à la vapeur;Fais sauter les crevettes 2 à 3 min dans une poêle antiadhésive;Ajoute les asperges et l'ail haché;Termine avec du citron#À manger tout de suite, les asperges ramollissent.
+Coupe le veau en morceaux et le chou-fleur en bouquets;Fais dorer le veau 5 min dans une cocotte antiadhésive;Ajoute le chou-fleur, de l'eau à mi-hauteur, sel, poivre et herbes;Mijote à couvert 25 min#Parfait pour le batch, 3 jours au frigo.
+Cuis les crevettes 2 min dans une poêle antiadhésive ou décongèle-les;Émince les endives et les radis;Mélange le tout;Assaisonne avec citron, moutarde et herbes#Sans cuisson si les crevettes sont déjà cuites.
+Émince le chou et le céleri;Couvre d'eau avec sel et poivre et cuis 20 min;Ajoute le jambon en lamelles hors du feu;Mixe en partie selon la texture voulue#Se conserve 3 à 4 jours, bonne en gamelle chaude.
+Fais tomber les épinards dans une poêle antiadhésive avec l'ail;Sale et poivre;Cuis le colin 3 à 4 min par face dans une autre poêle;Pose le colin sur les épinards avec du citron#Les épinards perdent beaucoup d'eau, prévois-en large.
+Coupe les tomates et l'oignon;Fais dorer le poulet en morceaux 5 min dans une cocotte antiadhésive;Ajoute tomates, oignon, sel, poivre et herbes;Mijote à couvert 20 min#Se conserve 3 jours, le goût s'améliore.
+Émince les endives;Mélange avec la salade et la bresaola;Assaisonne avec vinaigre, moutarde et citron;Ajoute du poivre#Sans cuisson, 10 min.
+Cuis le brocoli 6 à 8 min à la vapeur;Cuis le saumon à la poêle antiadhésive 3 à 4 min par face;Dresse avec le brocoli;Ajoute citron, sel et poivre#Le saumon est meilleur cuit le jour même.`.split('\n');
+function recD(i){if(!DKREC[i])return'';const[a,b]=DKREC[i].split('#');return `<details><summary>Recette</summary><ol>${a.split(';').map(s=>`<li>${s}</li>`).join('')}</ol><small>${b}</small></details>`}
+const FREC=`Pour 4 : épluche 1 kg de pommes de terre et coupe-les en fines rondelles;Frotte un plat à l'ail et étale les rondelles;Mélange 30 cl de crème, 20 cl de lait, sel, poivre, muscade et verse;Enfourne 1 h à 160 °C jusqu'à dorure#Meilleur réchauffé le lendemain.
+Détaille 1 chou-fleur en bouquets et cuis-les 10 min à l'eau;Prépare une béchamel : 40 g de beurre, 40 g de farine, 50 cl de lait;Mélange chou-fleur et béchamel dans un plat, couvre de 100 g d'emmental;Gratine 25 min à 200 °C#Égoutte bien le chou-fleur pour éviter l'eau.
+Fais revenir 1 oignon et 500 g de viande hachée, ajoute 500 g de sauce tomate et mijote 15 min;Prépare 1/2 l de béchamel;Alterne dans un plat sauce, pâtes, béchamel et fromage en 3 couches;Enfourne 40 min à 180 °C#Fais-les la veille, elles sont meilleures réchauffées.
+Fais revenir 1 oignon haché puis 500 g de viande hachée;Ajoute 500 g de sauce tomate, sel, poivre et herbes;Mijote 20 min;Cuis 400 g de spaghettis selon le paquet et mélange#La sauce se congèle en portions.
+Cuis 1 kg de pommes de terre 20 min et écrase-les avec lait chaud et beurre;Fais revenir 1 oignon et 500 g de viande hachée 10 min;Étale la viande puis la purée dans un plat et ajoute de l'emmental;Gratine 20 min à 200 °C#Fait aussi le midi de Laura le lendemain.
+Ouvre 4 escalopes de poulet en poche et glisse une tranche de jambon et une de fromage;Referme et passe dans la farine, l'œuf battu puis la chapelure;Fais dorer 6 min par face à la poêle ou 25 min au four à 200 °C;Sers avec du riz#Pique avec un cure-dent pour tenir.
+Coupe 4 escalopes de poulet en morceaux;Passe-les dans l'œuf battu puis la chapelure;Cuis 12 à 15 min au four à 200 °C en les retournant à mi-cuisson;Enfourne les frites en parallèle#Prépare-les en double, ils servent aussi le midi.
+Préchauffe le four à 200 °C;Sale, poivre et beurre le poulet, entoure-le de pommes de terre en quartiers;Enfourne 1 h 15 en arrosant de temps en temps;Laisse reposer 10 min#Les restes feront un midi pour Laura.
+Fais dorer 4 paupiettes 5 min par face avec un oignon;Ajoute 20 cl d'eau ou de bouillon;Mijote à couvert 40 min;Cuis le riz et sers avec la sauce#Retire la ficelle avant de servir.
+Préchauffe le four à 180 °C;Fais dorer le filet mignon 5 min sur chaque face;Enfourne 30 min avec un peu de bouillon;Laisse reposer 10 min, tranche et sers avec du riz#Cuis-le un peu plus si la chair est rosée.
+Pique les saucisses;Fais-les dorer 15 min à la poêle en les retournant;Cuis le riz 10 à 12 min;Sers avec la sauce de cuisson#Bon aussi avec des lentilles.
+Cuis 400 g de tagliatelles;Fais tomber 400 g d'épinards 5 min avec de la crème;Cuis le saumon 4 min par face à la poêle;Mélange pâtes et épinards et pose le saumon dessus#Épinards surgelés possibles.
+Enfourne le poisson pané selon le paquet, souvent 15 min à 200 °C;Cuis 500 g de haricots verts 10 min à l'eau salée;Ajoute un filet de citron et un peu de beurre#Prêt en 20 min.
+Fais chauffer de l'eau salée;Plonge les raviolis frais 2 à 3 min selon le paquet;Égoutte et nappe de sauce tomate ou de crème;Parsème de fromage râpé#Prépare la sauce pendant la cuisson des raviolis.
+Étale la pâte dans un moule;Fais dorer 200 g de lardons 3 min;Bats 3 œufs avec 20 cl de crème, sel, poivre et muscade;Répartis les lardons, verse et enfourne 35 min à 180 °C#Parfaite froide le lendemain.
+Étale la pâte;Fais revenir 2 courgettes en rondelles 5 min;Bats 3 œufs avec 20 cl de crème, sel et poivre;Verse sur les légumes et enfourne 35 min à 180 °C#Ajoute du fromage râpé si tu veux.
+Étale la pâte feuilletée;Fais tomber 500 g d'épinards et égoutte-les bien;Bats 3 œufs avec 20 cl de crème;Verse sur la pâte avec les épinards, enfourne 35 min à 180 °C#Presse bien les épinards.
+Étale la pâte très fine;Étale 20 cl de crème, ajoute oignon émincé et lardons;Enfourne 12 à 15 min à 240 °C;Sers chaud#À manger tout de suite.
+Étale la pâte;Nappe de sauce tomate;Garnis de jambon, fromage et champignons;Enfourne 12 à 15 min à 220 °C#Version surgelée : suis le paquet.
+Fais dorer les lardons 3 min;Bats 8 œufs avec sel et poivre;Ajoute le jambon coupé;Verse sur les lardons, laisse prendre 3 min et plie#Pour 4, fais deux omelettes.
+Beurre des ramequins;Verse 1 càs de crème au fond et casse un œuf dedans;Sale et poivre;Cuis 10 min au four à 180 °C#Les blancs doivent être pris, le jaune encore coulant.
+Plonge les œufs dans l'eau bouillante;Cuis 3 min pour une coque, 4 min pour plus ferme;Prépare des mouillettes de pain grillé;Sers avec du beurre#Utilise un minuteur.
+Beurre le pain de mie;Garnis de jambon et de fromage;Referme et saupoudre d'emmental;Grille 10 min au four à 200 °C#Prêt en 15 min.
+Épluche et coupe les légumes en morceaux;Couvre d'eau avec sel et poivre;Cuis 25 min;Mixe et ajoute un peu de crème#Une grosse casserole se garde 3 jours.
+Verse la soupe dans une casserole;Chauffe 5 min en remuant;Ajoute des croûtons ou du fromage râpé#Prête en 5 min.
+Cuis 1 kg de pommes de terre 20 min, épluche et coupe-les tièdes;Ajoute le cervelas en rondelles et de l'oignon;Assaisonne de vinaigrette à la moutarde;Laisse reposer 30 min#Meilleure préparée à l'avance.
+Cuis les pommes de terre 20 min à la vapeur;Réchauffe les knackis 5 min dans l'eau chaude;Sers avec de la moutarde#Rapide, idéal le jeudi.
+Cuis le riz et refroidis-le;Ajoute thon, tomates et œufs durs;Assaisonne de vinaigrette#Se prépare la veille, parfait en gamelle.
+Lave et essore la salade;Coupe les tomates;Assaisonne de vinaigrette#À servir en accompagnement.
+Coupe courgettes, aubergines, poivrons, tomates et oignon en dés;Fais-les revenir 10 min;Couvre et mijote 30 min;Sers avec du riz#Meilleure le lendemain, se congèle.
+Réchauffe les saucisses 5 min dans l'eau chaude;Ouvre et réchauffe les pains;Garnis de saucisse, moutarde et ketchup#Les filles peuvent assembler.
+Forme des steaks et cuis-les 3 à 4 min par face;Réchauffe les pains;Garnis de fromage, salade, tomate et steak;Referme et sers#Frites en accompagnement.
+Enfourne frites et nuggets selon le paquet, 15 à 20 min à 200 °C;Retourne à mi-cuisson#Prêt en 20 min.
+Pas de préparation#Repas sans courses.
+Pas de préparation#Repas sans courses.
+Plat prêt à réchauffer ou à manger froid#À acheter, pas de préparation.
+Plat prêt à servir#À acheter, pas de préparation.
+Plat prêt à servir#À acheter, pas de préparation.
+Plat prêt ou à composer rapidement#À acheter, pas de préparation.
+Réchauffe les restes du soir au micro-ondes ou à la poêle#Voir le plat du soir précédent.`.split('\n').concat(`Coupe les courgettes en rondelles et fais-les revenir 5 min;Bats les œufs avec la crème, sel et poivre;Dispose les courgettes dans un plat et verse le mélange;Parsème d'emmental et enfourne 30 min à 180 °C#Se réchauffe bien, bon le lendemain midi.
+Cuis les pâtes 2 min de moins que prévu;Mélange avec le jambon coupé et la crème;Verse dans un plat, couvre d'emmental;Gratine 15 min à 200 °C#Prépare-le la veille pour gagner du temps.
+Garnis le pain de mie de jambon et de fromage;Fais dorer 3 min par face à la poêle ou au four;Cuis des œufs au plat;Pose un œuf sur chaque croque#Rapide, parfait le jeudi.
+Fais cuire les pommes de terre en rondelles 15 min;Fais revenir lardons et oignon;Alterne pommes de terre, lardons et reblochon en tranches;Ajoute la crème et enfourne 25 min à 200 °C#Plat complet, accompagne d'une salade verte.
+Coupe le poulet en morceaux et fais-le dorer avec l'oignon;Ajoute le curry puis la crème;Laisse mijoter 15 min;Sers avec du riz cuit#Se garde 2 jours au frigo.
+Fais dorer le poulet en morceaux;Ajoute les champignons émincés;Verse la crème, sale, poivre et mijote 12 min;Sers avec des pâtes#Ajoute de l'échalote pour plus de goût.
+Fais revenir le veau sans le colorer;Couvre d'eau avec les carottes, sel et poivre et mijote 1 h;Retire la viande et lie la sauce avec la crème;Sers avec du riz#Meilleure réchauffée le lendemain.
+Fais revenir oignon et viande hachée;Ajoute tomates concassées et haricots rouges égouttés;Assaisonne et mijote 25 min;Sers avec du riz#Se congèle très bien.
+Mélange la viande hachée, un œuf, sel et poivre;Forme des boulettes et dore-les 8 min à la poêle;Ajoute la sauce tomate et mijote 10 min;Sers avec des pâtes#Les filles peuvent aider à former les boulettes.
+Préchauffe le four à 180 °C;Sale et poivre le rôti et enfourne 1 h;Cuis les haricots verts 10 min à l'eau;Laisse reposer le rôti 10 min avant de trancher#Les restes feront le midi de Laura.
+Épluche et cuis les pommes de terre 20 min;Écrase-les avec lait chaud et beurre;Cuis les côtes 5 min par face à la poêle;Sale et poivre à la fin#Rapide, ok pour le jeudi.
+Enfourne les frites selon le paquet;Cuis les steaks 2 à 3 min par face;Sale à la fin#Prêt en 15 min.
+Cuis les pommes de terre 20 min et écrase-les avec lait et beurre;Fais dorer les saucisses 10 min à la poêle en les retournant#Piquer les saucisses évite qu'elles éclatent.
+Assaisonne les cuisses et enfourne 45 min à 200 °C;Cuis le riz 10 à 12 min;Arrose les cuisses de leur jus avant de servir#Les restes se mangent froids ou réchauffés.
+Cuis et écrase les pommes de terre avec lait et beurre;Réchauffe le jambon à la poêle 2 min#Le plus rapide pour un soir de tir à l'arc.
+Fais dorer les lardons;Mélange œufs, crème, poivre et emmental;Égoutte les pâtes et mélange-les aux lardons;Ajoute la sauce hors du feu en remuant#Hors du feu pour que les œufs ne cuisent pas.
+Cuis les pâtes;Chauffe la crème 2 min avec du poivre;Ajoute le saumon en lanières hors du feu;Mélange avec les pâtes#Prêt en 12 min.
+Cuis les macaronis;Fais un roux avec beurre et farine, ajoute le lait en fouettant;Ajoute l'emmental jusqu'à fonte;Mélange avec les macaronis#Gratine 10 min pour plus de croustillant.
+Fais revenir oignon et champignons;Ajoute le riz et nacre-le 2 min;Verse du bouillon chaud louche par louche pendant 18 min;Termine avec du parmesan#À remuer régulièrement.
+Cuis le riz et laisse-le refroidir;Cuis les petits pois-carottes et coupe le jambon;Brouille 2 œufs à la poêle;Mélange tout à la poêle 3 min#Meilleur avec du riz de la veille.
+Coupe courgettes et poivrons en dés;Fais-les dorer 10 min;Fais cuire des œufs au plat;Pose-les sur les légumes#Les légumes se préparent la veille.
+Fais revenir les champignons émincés;Bats les œufs avec sel et poivre;Verse sur les champignons;Laisse prendre 2 min et plie#Prête en 8 min.
+Bats les œufs, sale, poivre;Verse dans une poêle chaude;Ajoute l'emmental au centre et plie#Prête en 5 min.
+Bats les œufs avec sel et poivre;Cuis à feu doux en remuant;Sers avec le jambon réchauffé#Sors-les du feu avant qu'ils sèchent.
+Étale la pâte dans un moule;Dispose le thon émietté et les tomates en rondelles;Bats œufs et crème et verse sur la garniture;Enfourne 30 min à 180 °C#Se mange chaude ou froide.
+Étale la pâte feuilletée;Ajoute courgettes en rondelles et chèvre;Bats œufs et crème et verse;Enfourne 30 min à 180 °C#Bonne froide le lendemain midi.
+Étale la pâte;Nappe de sauce tomate;Ajoute jambon, champignons et mozzarella;Enfourne 12 à 15 min à 220 °C#Chacune des filles peut composer la sienne.
+Étale la pâte dans un moule;Dispose le saumon en morceaux;Bats œufs et crème, sale, poivre, verse;Enfourne 35 min à 180 °C#Meilleure avec une salade verte.
+Fais cuire le poulet en lanières 8 min;Garnis les wraps de salade, tomates, poulet et fromage;Roule et coupe en deux#Chacun compose son wrap.
+Fais revenir la viande hachée avec les épices;Réchauffe les galettes;Garnis de viande, salade, tomates et emmental;Roule serré#Mets les garnitures sur la table.
+Coupe poulet, poivrons et oignon en lanières;Fais-les sauter 10 min avec les épices;Garnis les wraps chauds;Roule et sers#Prépare les légumes à l'avance.
+Enfile le poulet sur des piques;Cuis 12 à 15 min en les retournant;Prépare le riz pendant ce temps#Marine-les 30 min si tu as le temps.
+Cuis le poisson pané au four selon le paquet;Prépare la purée avec lait et beurre;Sers avec du citron#Prêt en 25 min.
+Cuis le cabillaud au four 15 min à 180 °C avec du citron;Cuis le riz et les haricots verts;Assaisonne le tout#Les haricots peuvent être cuits la veille.
+Cuis les pommes de terre en rondelles 10 min;Dispose-les avec le colin en morceaux dans un plat;Nappe de crème et d'emmental;Enfourne 25 min à 200 °C#Vérifie l'absence d'arêtes pour les filles.
+Fais revenir l'oignon;Ajoute le potiron en cubes et couvre d'eau;Cuis 20 min puis mixe avec la crème#Se congèle très bien.
+Épluche carottes, pommes de terre et oignon;Couvre d'eau, sale et cuis 25 min;Mixe jusqu'à obtenir une texture lisse#Prépare une grosse casserole pour 2 repas.
+Cuis les pâtes et refroidis-les;Coupe tomates et œufs durs;Mélange avec thon et maïs;Assaisonne de vinaigrette#Idéale en gamelle pour le midi de Laura.
+Retire l'emballage et perce le film;Réchauffe au micro-ondes 4 à 5 min ou au four 20 min à 180 °C;Remue à mi-cuisson#Rayon traiteur, pas de préparation.
+Retire l'emballage et perce le film;Réchauffe au micro-ondes 4 à 5 min ou au four 20 min à 180 °C;Laisse reposer 1 min#Rayon traiteur, pas de préparation.
+Retire l'emballage et perce le film;Réchauffe au micro-ondes 4 à 5 min ou au four 20 min à 180 °C;Laisse reposer 1 min#Rayon traiteur, pas de préparation.
+Cuis les tortellini 3 min dans l'eau bouillante;Égoutte et réchauffe la sauce tomate 2 min;Mélange et sers#Prêt en 8 min.
+Réchauffe le plat au micro-ondes 3 à 4 min en remuant;Laisse reposer 1 min#Rayon traiteur, pas de préparation.
+Réchauffe la blanquette 4 min au micro-ondes en remuant;Cuis le riz 10 à 12 min ou réchauffe du riz en sachet#Rayon traiteur, riz à prévoir.
+Réchauffe le poulet 4 min au micro-ondes ou 15 min au four;Enfourne les frites 15 à 20 min à 200 °C#Rayon traiteur et surgelés.
+Réchauffe la quiche 3 min au micro-ondes ou 10 min au four à 180 °C#Rayon traiteur, pas de préparation.
+Enfourne la pizza 10 à 12 min à 220 °C;Découpe en parts#Rayon surgelés.
+Verse les raviolis dans une casserole ou un bol micro-ondes;Réchauffe 3 min en remuant#Conserve en boîte, prêt en 5 min.`.split('\n'));
+function recF(x){const t=x.r||(x.id[0]=='d'?FREC[+x.id.slice(1)]:'');if(!t)return'';const[a,b]=t.split('#');return `<details><summary>Recette</summary><ol>${a.split(';').map(s=>`<li>${s}</li>`).join('')}</ol><small>${b||''}</small></details>`}
+const V=[['ail',/\bail\b/,0,1],['citron',/citron/,0,1],['persil',/persil/,0,1],['herbes',/herbes/,0,1],['oignon',/oignon/,0,1],['échalote',/échalote/,0,1],['jambon',/jambon/,3,1],['sauce tomate',/sauce tomate/,7,1],['croûtons',/croûton/,8,1],['muscade',/muscade/,7,0],['bouillon',/bouillon/,7,0],['moutarde',/moutarde/,7,0],['vinaigre',/vinaigr/,7,0],['ketchup',/ketchup/,7,0],['curry',/curry/,7,0]];
+const recX=x=>{const t=((x.r||(x.id[0]=='d'?FREC[+x.id.slice(1)]:''))||'').toLowerCase(),have=x.it.map(a=>a[0].toLowerCase());return V.filter(v=>v[1].test(t)&&!have.includes(v[0])).map(v=>[v[0],v[2],v[3]])};
+const recXD=r=>{const t=(DKREC[r.id]||'').toLowerCase(),have=r.it.map(a=>a[0].toLowerCase());return V.filter(v=>v[1].test(t)&&!have.includes(v[0])).map(v=>[v[0],v[2],v[3]])};
+function dkLink(ds,x){const[a,b,c]=ds.split('-').map(Number);if(!x||x.t.includes('R')||x.n=='Restes de la veille'||shift(new Date(a,b-1,c))!='PM')return null;const k=S.dk[ds];if(!k||!k.on||!k.ph)return null;dkEns(ds);return dkd((S.dm[ds]||{}).d)}
+function dkSl(ds){if(ds[0]!='a')return['d','n'];const[a,b,c]=ds.slice(1).split('-').map(Number),w=new Date(a,b-1,c).getDay();return S.vac[ds.slice(1)]||(w>=1&&w<=4)?['d','n']:['n']}
+function dkItems(){const out=[];[['','Cyril'],['a','Aurore']].forEach(([p,nom])=>{const A={},X={};days().forEach(d=>{const ds=p+iso(d),k=S.dk[ds];if(!k||!k.on||!k.ph)return;const m=S.dm[ds]||{};dkSl(ds).forEach(s=>{const r=dkd(m[s]);if(r){r.it.forEach(([f,g])=>{A[f]=(A[f]||0)+g});recXD(r).forEach(v=>{X[v[0]]=v})}});A['skyr ou yaourt 0%']=(A['skyr ou yaourt 0%']||0)+125;if(PH[k.ph].f)A['pomme ou poire']=(A['pomme ou poire']||0)+150});Object.entries(A).forEach(([n,g])=>out.push([(n=='œufs'?n+' ×'+Math.round(g/60):n=='skyr ou yaourt 0%'?n+' ×'+Math.round(g/125):n=='pomme ou poire'?n+' ×'+Math.round(g/150):n+' '+g+' g')+' ('+nom+')',DR[n]??0]));Object.values(X).forEach(v=>out.push([v[0]+' ('+nom+')',v[1],v[2]]))});const AL={};days().forEach(d=>{const ds=iso(d),r=dkLink(ds,dd((S.m[ds]||{}).L));if(r)r.it.forEach(([f,g])=>{AL[f]=(AL[f]||0)+g})});Object.entries(AL).forEach(([n,g])=>out.push([(n=='œufs'?n+' ×'+Math.round(g/60):n+' '+g+' g')+' (Laura)',DR[n]??0]));return out}
+function dkItemsOld(){const A={};days().forEach(d=>{const ds=iso(d),k=S.dk[ds];if(!k||!k.on||!k.ph)return;const m=S.dm[ds]||{};['d','n'].forEach(s=>{const r=dkd(m[s]);if(r)r.it.forEach(([f,g])=>{A[f]=(A[f]||0)+g})});A['skyr ou yaourt 0%']=(A['skyr ou yaourt 0%']||0)+125;if(PH[k.ph].f)A['pomme ou poire']=(A['pomme ou poire']||0)+150});return Object.entries(A).map(([n,g])=>[n+' '+g+' g (Cyril)',DR[n]??0])}
+function dkBlock(d,ds){const k=S.dk[ds]||{};let h=`<div class="sl np"><label class="ck" style="border:0;padding:0"><input type="checkbox"${k.on?' checked':''} onchange="dkTog('${ds}',this.checked)"> <b>Dukan, ${ds[0]=='a'?'Aurore':'Cyril'}</b></label>`;
+ if(k.on){h+=`<select class="w" onchange="dkPh('${ds}',this.value)"><option value="">Choisis la phase pour voir tes repas</option>${Object.entries(PH).map(([c,v])=>`<option value="${c}"${k.ph==c?' selected':''}>${v.n}</option>`).join('')}</select>`;
+  if(k.ph){dkEns(ds);const m=S.dm[ds];h+=dkSl(ds).map(s=>{const r=dkd(m[s]);return `<div class="row" style="margin-top:6px"><span><small>${s=='d'?'Midi':'Soir'}, ${ds[0]=='a'?'Aurore':'Cyril'}</small><br><b>${esc(r.n)}</b></span><span>${ds[0]=='a'&&m.o&&m.o[s]&&S.dk[ds.slice(1)]&&S.dk[ds.slice(1)].on&&S.dk[ds.slice(1)].ph==k.ph?`<button onclick="dkSame('${ds}','${s}')" title="Reprendre le plat de Cyril">=</button> `:''}<button onclick="dkRnd('${ds}','${s}')" title="Au hasard">🎲</button> <button onclick="tg2(this)" title="Choisir">✏️</button></span></div><small>${r.it.map(([f,g,p])=>f+' '+g+' g ('+p+')').join(', ')}</small><select class="w" hidden onchange="dkSet('${ds}','${s}',this.value)"><option value="">Choisir…</option>${dkOpts(ds).map(i=>`<option value="${i}"${m[s]==i?' selected':''}>${esc(DK[i].n)} (${DK[i].t} min)</option>`).join('')}</select>${recD(r.id)}`}).join('')+`<br><small>Chaque jour : skyr ou yaourt 0% avec ${PH[k.ph].c} càs de son d'avoine${PH[k.ph].f?', 1 fruit (pomme ou poire)':''}.</small>`}}
+ return h+'</div>'}
+function dayH(d){const ds=iso(d),m=S.m[ds]||{},sh=shift(d),pv=S.m[iso(add(d,-1))]||{};
+ return `<div class="cd"><div class="top"><b class="dn">${d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'short'})}</b><span><label class="np" style="font-size:13px"><input type="checkbox"${S.vac[ds]?' checked':''} onchange="vac('${ds}',this.checked)" style="width:auto"> Vacances</label> <span class="tag ${S.vac[ds]?'':sh}">${S.vac[ds]?'À la maison':{AM:'Matin',PM:'Après-midi',OFF:'Repos'}[sh]}</span></span></div>`+slots(d).map(s=>{const t=tag(s,d),x=dd(m[s]),lab=labF(s,d);let nm=x?x.n:'—';if(x&&x.n=='Restes de la veille'&&pv.S&&dd(pv.S))nm='Restes : '+dd(pv.S).n;const lk=s=='L'?dkLink(ds,x):null;if(lk)nm=lk.n;
+ return `<div class="sl"><small>${lab}</small><div class="row"><span><b>${esc(nm)}</b>${s=='L'&&x&&x.n!='Restes de la veille'&&(x.t.includes('R')||shift(d)=='PM')?`<br><small>${lk?'même plat Dukan que Cyril':x.t.includes('R')?'plat prêt à réchauffer':'préparé par Cyril avant son poste'}</small>`:''}</span><span class="np"><button onclick="rnd('${ds}','${s}')" title="Au hasard">🎲</button> <button onclick="tg(this)" title="Choisir dans la liste">✏️</button></span></div><select class="np" hidden onchange="setD('${ds}','${s}',this.value)"><option value="">Choisir…</option>${opts(t).map(k=>`<option value="${k}"${k==m[s]?' selected':''}>${esc(dd(k).n)}</option>`).join('')}</select>${x?recF(x):''}</div>`}).join('')+dkBlock(d,ds)+dkBlock(d,'a'+ds)+'</div>'}
+function menuV(){const ds=days();return `<div class="wk np"><button onclick="wk=add(wk,-7);render()" title="Semaine précédente">‹</button><button onclick="wk=sow(new Date());render()" title="Aujourd'hui"><b>${fr(ds[0])} au ${fr(ds[6])}</b></button><button onclick="wk=add(wk,7);render()" title="Semaine suivante">›</button></div><div class="acts np"><button onclick="fill()">Remplir la semaine</button><button onclick="window.print()">Imprimer / PDF</button></div>${sheetH(ds)}`+'<div class="np">'+ds.map(dayH).join('')+'</div>'+`<button class="pri big np" onclick="S.v[iso(wk)]=1;save();go('c')">${S.v[iso(wk)]?'Menu validé, voir les courses':'Valider le menu et créer la liste'}</button>`}
+function items(){const k=iso(wk),M={},put=(n,r,c)=>{if(S.rm[k+'|'+n])return;(M[n]||(M[n]={r,c:0})).c+=c};
+ days().forEach(d=>slots(d).forEach(s=>{const x=dd((S.m[iso(d)]||{})[s]);if(x&&!(s=='L'&&dkLink(iso(d),x))){x.it.forEach(([n,r])=>put(n,r,1));recX(x).forEach(([n,r,c])=>put(n,r,c))}}));
+ dkItems().forEach(([n,r,c=1])=>put(n,r,c));BASE.forEach(([n,r])=>put(n,r,0));(S.x[k]||[]).forEach(([n,r])=>put(n,r,0));return M}
+const sorted=(M,ri)=>Object.entries(M).filter(([n,o])=>o.r==ri).sort((a,b)=>a[0]<b[0]?-1:1);
+function shopOld(){const k=iso(wk);if(!S.v[k])return '<div class="cd"><small>Valide d\'abord le menu de la semaine dans Menu.</small></div>';
+ const M=items();
+ return `<div class="cd"><b>Courses du ${fr(wk)} au ${fr(add(wk,6))}</b><div class="acts np" style="margin:8px 0 0"><button class="pri" onclick="dlT()">Télécharger (texte)</button><button onclick="cpL()">Copier</button><button onclick="S.v[iso(wk)]=0;save();go('m')">Modifier le menu</button></div></div>`+
+ R.map((a,ri)=>{const l=sorted(M,ri);return l.length?`<div class="cd"><b>${a}</b>${l.map(([n,o])=>`<label class="ck"><input type="checkbox" data-n="${esc(n)}"${S.c[k+'|'+n]?' checked':''} onchange="S.c[iso(wk)+'|'+this.dataset.n]=this.checked;save()"> ${esc(n)}${o.c>1?' ×'+o.c:''}<button class="np" data-n="${esc(n)}" onclick="delI(this)">✕</button></label>`).join('')}</div>`:''}).join('')+
+ `<div class="cd np"><b>Ajouter un produit</b><input type="text" id="an" class="w" placeholder="Produit" style="margin:6px 0"><select id="ar" class="w">${R.map((a,i)=>`<option value="${i}">${a}</option>`).join('')}</select><select id="ap" class="w" style="margin-top:6px"><option value="">Petit-déjeuner : pour qui ?</option><option>Laura</option><option>Camille</option><option>Compagne</option><option>Moi</option></select><button class="pri w" style="margin-top:6px" onclick="addX()">Ajouter</button></div>`}
+function delI(b){const k=iso(wk),n=b.dataset.n;S.x[k]=(S.x[k]||[]).filter(e=>e[0]!=n);S.rm[k+'|'+n]=1;save();render()}
+function addX(){const k=iso(wk);let n=$('#an').value.trim(),r=+$('#ar').value,p=$('#ap').value;if(!n)return;if(r==11&&p)n=p+' : '+n;delete S.rm[k+'|'+n];(S.x[k]||(S.x[k]=[])).push([n,r]);save();render()}
+function txtOld(){const k=iso(wk),M=items();return 'Liste de courses du '+fr(wk)+' au '+fr(add(wk,6))+R.map((a,ri)=>{const l=sorted(M,ri);return l.length?'\n\n'+a+'\n'+l.map(([n,o])=>(S.c[k+'|'+n]?'☑ ':'☐ ')+n+(o.c>1?' ×'+o.c:'')).join('\n'):''}).join('')}
+async function dlT(){const t=txt();try{const d=await claude.use('downloads');if(d){await d.save({filename:'courses.txt',data:t});return}}catch(e){}cpL()}
+function msg(s){const e=document.createElement('div');e.textContent=s;e.style.cssText='position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ac);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:9';document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
+function cpL(){const t=txt();try{navigator.clipboard.writeText(t).then(()=>msg('Copié'),()=>{BX=t;render()})}catch(e){BX=t;render()}}
+const TG=[['S','Soir'],['Q','Soir rapide (jeudi tir à l\'arc)'],['W','Midi mercredi et week-end'],['E','Midi week-end seulement'],['C','Midi Aurore'],['L','Midi Laura']];
+function platsV(){if(!F)PK=false;let h=F?`<div class="cd"><b>${F.id?'Modifier le plat':'Nouveau plat'}</b><input type="text" id="fn" class="w" placeholder="Nom du plat" value="${esc(F.n)}" style="margin:6px 0">${TG.map(([k,l])=>`<label class="ck"><input type="checkbox"${F.t.includes(k)?' checked':''} onchange="F.t=this.checked?F.t+'${k}':F.t.replace('${k}','')"> ${l}</label>`).join('')}<small>Ingrédients pour la liste de courses</small><button class="w" style="margin:6px 0" onclick="F.n=$('#fn').value;PK=!PK;PS=[];render()">Choisir parmi les ingrédients existants</button>${PK?pkH():''}${F.it.map((a,i)=>`<div class="row"><span>${esc(a[0])} <small>${R[a[1]]}</small></span><button onclick="F.n=$('#fn').value;F.it.splice(${i},1);render()">✕</button></div>`).join('')}<div class="row" style="margin-top:6px"><input type="text" id="fi" placeholder="Ingrédient" style="flex:1;min-width:0"><select id="fr">${R.map((a,i)=>`<option value="${i}">${a}</option>`).join('')}</select></div><button class="w" style="margin-top:6px" onclick="addI()">Ajouter l'ingrédient</button><div class="acts" style="margin-top:8px"><button class="pri" onclick="saveF()">Enregistrer</button><button onclick="F=null;render()">Annuler</button></div></div>`:`<button class="pri big" onclick="F={id:null,n:'',t:'',it:[]};render()">Ajouter un plat</button>`;
+ return h+D().map(x=>`<div class="cd"><div class="row"><b>${esc(x.n)}</b><span><button onclick="editF('${x.id}')" title="Modifier">✏️</button> <button onclick="delD('${x.id}')">${DEL==x.id?'Confirmer':'🗑'}</button></span></div><small>${TG.filter(([k])=>x.t.includes(k)).map(a=>a[1]).join(', ')}<br>${x.it.map(a=>a[0]).join(', ')||'sans courses'}</small></div>`).join('')}
+let PK=false,PS=[];
+function pkH(){const C=catalog(),have=F.it.map(a=>a[0]);let h='<div class="cd" style="margin:6px 0"><input type="text" class="w" placeholder="Rechercher un ingrédient" oninput="pkF(this.value)" style="margin-bottom:6px"><div class="pk" style="max-height:260px;overflow:auto">';
+ R.forEach((a,ri)=>{const l=Object.entries(C).filter(([n,o])=>o.r==ri&&!have.includes(n)).sort((x,y)=>x[0]<y[0]?-1:1);if(l.length)h+=`<small>${a}</small>`+l.map(([n])=>`<label class="ck"><input type="checkbox" data-n="${esc(n)}"${PS.includes(n)?' checked':''} onchange="pkT(this)"> ${esc(n)}</label>`).join('')});
+ return h+'</div><button class="pri w" style="margin-top:6px" onclick="pkAdd()">Ajouter la sélection</button></div>'}
+function pkT(el){const n=el.dataset.n;PS=PS.filter(x=>x!=n);if(el.checked)PS.push(n)}
+function pkF(v){v=v.toLowerCase();document.querySelectorAll('.pk label').forEach(l=>l.style.display=l.textContent.toLowerCase().includes(v)?'':'none')}
+function pkAdd(){const C=catalog();PS.forEach(n=>{if(!F.it.some(a=>a[0]==n))F.it.push([n,C[n]?C[n].r:7])});PS=[];PK=false;render()}
+function addI(){F.n=$('#fn').value;const n=$('#fi').value.trim();if(!n)return;F.it.push([n,+$('#fr').value]);render()}
+function editF(id){const x=dd(id);F={id:x.id,n:x.n,t:x.t,it:x.it.map(a=>a.slice())};render();window.scrollTo(0,0)}
+function saveF(){F.n=$('#fn').value.trim();if(!F.n||!F.t){msg('Nom et au moins un moment');return}if(!S.D)S.D=DEF.map(x=>({...x}));if(F.id){const x=S.D.find(y=>y.id==F.id);x.n=F.n;x.t=F.t;x.it=F.it}else S.D.push({id:'u'+Date.now(),n:F.n,t:F.t,it:F.it});save();F=null;render()}
+function delD(id){if(DEL!=id){DEL=id;render();return}DEL=null;if(!S.D)S.D=DEF.map(x=>({...x}));S.D=S.D.filter(x=>x.id!=id);save();render()}
+function go(t){tab=t;render();window.scrollTo(0,0)}
+function render(){const h=tab=='m'?menuV():tab=='c'?shopV():platsV();
+ $('#app').innerHTML=(BX?`<div class="cd"><small>Copie ce texte (appui long, tout sélectionner) :</small><textarea id="bxt" readonly rows="8" class="w">${esc(BX)}</textarea><button onclick="BX='';render()">Fermer</button></div>`:'')+h;
+ [['t1','m'],['t2','c'],['t3','p']].forEach(([i,t])=>$('#'+i).className=tab==t?'on':'');if(BX){const t=$('#bxt');t.focus();t.select()}}
+render();
+</script></body></html>

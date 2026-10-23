@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dukan, menus et poids</title>
+<style>
+:root{--bg:#edf1f2;--cd:#fff;--tx:#15262c;--mu:#5f7078;--bd:#d3dcdf;--ac:#0f766e;--rd:#b42318;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1719;--cd:#182326;--tx:#e6eef0;--mu:#8fa3aa;--bd:#2a3a3f;--ac:#4fd1c0;--rd:#f28b82}}
+:root[data-theme=dark]{--bg:#0f1719;--cd:#182326;--tx:#e6eef0;--mu:#8fa3aa;--bd:#2a3a3f;--ac:#4fd1c0;--rd:#f28b82}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:6px;padding:8px;background:var(--bg)}
+button,select,input{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:8px;padding:7px 9px}
+button{cursor:pointer}nav button{flex:1;font-weight:700}
+.pri,nav .on{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+main{padding:0 8px 24px;max-width:560px;margin:auto}
+.cd{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px;margin-bottom:8px}
+.today{border:2px solid var(--ac)}
+.top,.mh,.wk{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.wk{margin-bottom:6px}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--bd);color:var(--mu)}
+.AM{background:#f6c453;color:#3b2a00;border-color:#f6c453}.PM{background:#9ec5ee;color:#0b2a4a;border-color:#9ec5ee}
+.meal{border-top:1px solid var(--bd);margin-top:8px;padding-top:6px}
+.meal select,select.ph,.nt{width:100%;margin-top:4px}
+.ln{font-size:13px;margin:3px 0}.ln input{width:64px;padding:3px 5px;text-align:right}
+small,.mu{color:var(--mu);font-size:12px}
+label.ck{display:flex;gap:8px;align-items:center;margin-top:6px}
+label.ck input{width:18px;height:18px;padding:0}
+details{margin-top:6px;font-size:13px}summary{cursor:pointer;color:var(--ac);font-weight:700}ol{margin:4px 0 4px 18px;padding:0}
+.row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid var(--bd);font-size:14px}
+</style></head><body>
+<nav><button id="t1" onclick="go('w')">Menus</button><button id="t3" onclick="go('c')">Courses</button><button id="t2" onclick="go('p')">Poids</button><button id="t4" onclick="go('d')">Données</button></nav>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s);
+const RAW=`Poulet poêlé citron-herbes|15|0|poulet,150,1 blanc
+Omelette jambon blanc|10|0|œufs,180,3 œufs;jambon blanc dégraissé,60,2 tranches
+Thon et œufs durs, moutarde|10|0|thon nature,110,1 boîte;œufs,120,2 œufs
+Cabillaud au four citron|25|1|cabillaud,200,1 pavé
+Colin poêlé ail-persil|15|0|colin,200,1 filet
+Escalope de dinde grillée|10|0|dinde,150,1 escalope
+Steak de bœuf maigre|12|0|bœuf maigre,150,1 steak
+Escalope de veau moutarde|15|0|veau,150,1 escalope
+Crevettes à l'ail poêlées|10|0|crevettes,150,10 pièces env.
+Bresaola et fromage blanc aux herbes|5|0|bresaola,60,6 tranches;fromage blanc 0%,150,3/4 de pot
+Rôti de porc maigre|45|1|porc maigre,180,2 tranches
+Saumon au four|25|1|saumon,150,1 pavé
+Merlu ou lieu en papillote|25|1|merlu ou lieu,200,1 filet
+Poulet sauté brocoli-ail|20|1|poulet,150,1 blanc;brocoli,200,1 bol
+Omelette champignons-épinards|12|0|œufs,180,3 œufs;champignons,100,1 poignée;épinards,100,1 poignée
+Salade thon, tomates, œuf|10|0|thon nature,110,1 boîte;tomates,150,2 tomates;salade,80,1 bol;œufs,60,1 œuf
+Velouté de courgettes à l'ail, jambon|20|1|courgettes,300,2 courgettes;jambon blanc dégraissé,60,2 tranches
+Dinde aux poivrons|20|0|dinde,150,1 escalope;poivrons,150,1 poivron
+Sauté de bœuf aux champignons|25|1|bœuf maigre,150,1 steak;champignons,150,1 barquette
+Cabillaud et haricots verts|20|0|cabillaud,200,1 pavé;haricots verts,200,1 bol
+Crevettes et asperges poêlées|15|0|crevettes,150,10 pièces env.;asperges,200,8 pointes env.
+Veau mijoté au chou-fleur|35|1|veau,150,1 escalope;chou-fleur,250,1 bol
+Salade crevettes, endives, radis|10|0|crevettes,120,8 pièces env.;endives,100,1 endive;radis,50,5 radis
+Soupe de choux et céleri, jambon|25|1|choux,250,1 bol;céleri,100,2 branches;jambon blanc dégraissé,60,2 tranches
+Colin aux épinards|20|0|colin,200,1 filet;épinards,200,1 grosse poignée
+Poulet mijoté tomates-oignon|30|1|poulet,150,1 blanc;tomates,250,3 tomates;oignon,50,1/2 oignon
+Salade bresaola et endives|10|0|bresaola,60,6 tranches;endives,100,1 endive;salade,80,1 bol
+Saumon et brocoli vapeur|25|0|saumon,150,1 pavé;brocoli,200,1 bol`.split('\n').map((l,i)=>{const[n,t,b,it]=l.split('|');return{i,n,t:+t,b:+b,it:it.split(';').map(x=>{const[f,g,p]=x.split(',');return{f,g:+g,p}})}});
+const VEG=new Set('brocoli,courgettes,tomates,salade,champignons,épinards,poivrons,haricots verts,asperges,chou-fleur,choux,endives,radis,céleri'.split(','));
+RAW.forEach(r=>r.pl=r.it.some(x=>VEG.has(x.f)));
+const PH={at:{n:'Attaque',pp:1,c:1.5},pp:{n:'Croisière PP (protéines pures)',pp:1,c:2},pl:{n:'Croisière PL (protéines + légumes)',pp:0,c:2},co:{n:'Consolidation',pp:0,c:2.5,f:1},st:{n:'Stabilisation',pp:0,c:3,f:1}};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const fr=d=>d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+const fm=n=>(+n).toFixed(1).replace('.',',');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function sow(d){const x=new Date(d),n=(x.getDay()+6)%7;x.setDate(x.getDate()-n);x.setHours(0,0,0,0);return x}
+function shift(d){if((d.getMonth()==0&&d.getDate()==1)||(d.getMonth()==11&&d.getDate()==31))return'OFF';const w=Math.round((sow(d)-sow(new Date(2025,11,29)))/6048e5),n=(d.getDay()+6)%7;return w%2==0?(n<=3?'AM':'OFF'):(n<=4?'PM':'OFF')}
+const lim=(sh,s)=>sh=='AM'?15:sh=='PM'?(s=='d'?30:10):999;
+const valid=(r,ph)=>!(PH[ph].pp&&r.pl);
+let S={ph:{},m:{},w:[],st:97,tg:80,mx:{c:0,s:0},cl:{}},tab='w',wk=sow(new Date()),BX='';
+try{Object.assign(S,JSON.parse(localStorage.getItem('dukan1')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('dukan1',JSON.stringify(S))}catch(e){}};
+function pick(ds,s,av,nb){const ph=S.ph[ds],sh=shift(parse(ds));
+ let c=RAW.filter(r=>valid(r,ph)&&(r.t<=lim(sh,s)||r.b)&&!av.includes(r.i));
+ const pv=(S.m[iso(add(parse(ds),-1))]||{})[s];
+ if(!nb&&pv!=null){let run=1;for(let k=2;k<5;k++){if((S.m[iso(add(parse(ds),-k))]||{})[s]===pv)run++;else break}
+  if(RAW[pv].b&&run<4&&c.some(x=>x.i==pv)&&Math.random()<.7)return pv}
+ c=c.filter(r=>r.i!==pv);
+ if(!c.length)c=RAW.filter(r=>valid(r,ph)&&!av.includes(r.i));
+ return c[Math.floor(Math.random()*c.length)].i}
+function ensure(ds){const ph=S.ph[ds],m=S.m[ds]||(S.m[ds]={});
+ ['d','n'].forEach(s=>{if(m[s]==null||!valid(RAW[m[s]],ph)){const o=m[s=='d'?'n':'d'];m[s]=pick(ds,s,o!=null?[o]:[])}})}
+function clr(m,s){if(m.x)Object.keys(m.x).forEach(k=>{if(k[0]==s)delete m.x[k]})}
+function rnd(ds,s){const m=S.m[ds];m[s]=pick(ds,s,[m[s],m[s=='d'?'n':'d']],1);clr(m,s);save();render()}
+function setR(ds,s,v){const m=S.m[ds];m[s]=+v;clr(m,s);save();render()}
+function setG(ds,k,v){const m=S.m[ds];(m.x||(m.x={}))[k]=+v;save()}
+function ck(ds,k,v){const m=S.m[ds];(m.ck||(m.ck={}))[k]=v;save()}
+function note(ds,v){S.m[ds].note=v;save()}
+function setPh(ds,v){if(v)S.ph[ds]=v;else delete S.ph[ds];save();render()}
+function setWk(v){if(!v)return;for(let i=0;i<7;i++)S.ph[iso(add(wk,i))]=v;save();render()}
+function tg(b){const s=b.closest('.meal').querySelector('select');s.hidden=!s.hidden}
+const po=()=>Object.entries(PH).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('');
+function meal(ds,s,sh){const m=S.m[ds],r=RAW[m[s]],ph=S.ph[ds];
+ const LB={d:{AM:'Déjeuner, après le poste',PM:'Déjeuner, avant le poste',OFF:'Déjeuner'},n:{AM:'Dîner',PM:'Dîner tardif, ≤10 min ou batch',OFF:'Dîner'}}[s][sh];
+ const opts=RAW.filter(x=>valid(x,ph)).map(x=>`<option value="${x.i}"${x.i==r.i?' selected':''}>${x.n} (${x.t} min${x.b?', batch':''})</option>`).join('');
+ return `<div class="meal"><div class="mh"><small>${LB}</small><span><button onclick="rnd('${ds}','${s}')" title="Au hasard">🎲</button> <button onclick="tg(this)" title="Choisir dans la liste">✏️</button></span></div><b>${r.n}</b> <small>${r.t} min${r.b?', batch':''}</small>${r.it.map((x,i)=>`<div class="ln">${x.f} <input type="number" inputmode="decimal" value="${m.x&&m.x[s+i]!=null?m.x[s+i]:x.g}" onchange="setG('${ds}','${s+i}',this.value)"> g <small>(${x.p})</small></div>`).join('')}${rec(r.i)}<select hidden onchange="setR('${ds}','${s}',this.value)">${opts}</select><label class="ck"><input type="checkbox"${m.ck&&m.ck[s]?' checked':''} onchange="ck('${ds}','${s}',this.checked)"> Mangé</label></div>`}
+function day(d){const ds=iso(d),sh=shift(d),ph=S.ph[ds],L={AM:'Matin 5h–13h',PM:'Après-midi 13h–21h',OFF:'Repos'};
+ let h=`<div class="cd${ds==iso(new Date())?' today':''}"><div class="top"><b>${d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'short'})}</b><span class="tag ${sh}">${L[sh]}</span></div><select class="ph" onchange="setPh('${ds}',this.value)"><option value="">Choisir la phase du jour…</option>${po().replace(`value="${ph}"`,`value="${ph}" selected`)}</select>`;
+ if(ph){ensure(ds);const m=S.m[ds],P=PH[ph],ck_=k=>m.ck&&m.ck[k]?' checked':'';
+  h+=meal(ds,'d',sh)+meal(ds,'n',sh)+`<div class="meal"><small>Chaque jour</small><label class="ck"><input type="checkbox"${ck_('s')} onchange="ck('${ds}','s',this.checked)"> Skyr ou yaourt 0% (125 g) avec ${P.c} càs de son d'avoine</label>`+(P.f?`<label class="ck"><input type="checkbox"${ck_('f')} onchange="ck('${ds}','f',this.checked)"> 1 fruit : pomme ou poire</label>`:'')+(ph=='st'&&d.getDay()==4?'<small>Jeudi : journée protéines pures recommandée en Stabilisation.</small>':'')+extra(ds)+`<input class="nt" placeholder="Écarts, ce que tu as vraiment mangé" value="${esc(m.note||'')}" onchange="note('${ds}',this.value)"><button style="width:100%;margin-top:6px" onclick="cpDay('${ds}')">Copier le résumé du jour</button></div>`}
+ return h+'</div>'}
+const CR={c:['Chocolat noir Nestlé Dessert','carreaux'],s:["Compote d'abricot Andros",'cuillères']};
+function cnt(ds,k,d){const m=S.m[ds],c=m.cr||(m.cr={c:0,s:0});c[k]=Math.max(0,(c[k]||0)+d);save();render()}
+function setA(ds,k,v){const m=S.m[ds];(m.act||(m.act={}))[k]=v===''?null:+v;save()}
+const wkC=ds=>{let c=0,s=0;ds.forEach(d=>{const r=(S.m[iso(d)]||{}).cr;if(r){c+=r.c||0;s+=r.s||0}});return 'Craquages de la semaine : '+c+' carreaux, '+s+' cuillères'};
+function extra(ds){const m=S.m[ds],c=m.cr||{},a=m.act||{};
+ const row=k=>{const mx=S.mx[k],v=c[k]||0;return `<div class="row"><span>${CR[k][0]}<br><small${mx&&v>mx?' style="color:var(--rd)"':''}>${v} ${CR[k][1]}${mx?' sur '+mx+' max':''}</small></span><span><button onclick="cnt('${ds}','${k}',-1)">−</button> <button onclick="cnt('${ds}','${k}',1)">+</button></span></div>`};
+ const f=(k,l,u)=>`<div class="ln">${l} <input type="number" inputmode="decimal" value="${a[k]??''}" onchange="setA('${ds}','${k}',this.value)"> <small>${u}</small></div>`;
+ return `<div class="meal"><small>Craquages autorisés</small>${row('c')}${row('s')}</div><div class="meal"><small>Activité du jour</small>${f('pas','Marche','pas')}${f('km','Vélo','km')}${f('dp','Dénivelé positif','m')}${f('mu','Muscu','min')}</div>`}
+function sumDay(ds){const m=S.m[ds],ph=S.ph[ds],sh=shift(parse(ds)),a=m.act||{},c=m.cr||{},ok=k=>m.ck&&m.ck[k]?'oui':'non';
+ const ml=s=>{const r=RAW[m[s]];return (s=='d'?'Déjeuner':'Dîner')+' ('+(m.ck&&m.ck[s]?'mangé':'non coché')+') : '+r.n+' avec '+r.it.map((x,i)=>x.f+' '+(m.x&&m.x[s+i]!=null?m.x[s+i]:x.g)+' g').join(', ')};
+ return ['Date : '+ds+' ('+{AM:'poste du matin',PM:"poste d'après-midi",OFF:'repos'}[sh]+')','Phase : '+PH[ph].n,ml('d'),ml('n'),"Skyr ou yaourt avec son d'avoine : "+ok('s'),PH[ph].f?'Fruit : '+ok('f'):'','Craquages : chocolat noir '+(c.c||0)+' carreaux, compote d\'abricot '+(c.s||0)+' cuillères','Activité : marche '+(a.pas??'-')+' pas, vélo '+(a.km??'-')+' km, D+ '+(a.dp??'-')+' m, muscu '+(a.mu??'-')+' min','Poids du jour : '+((S.w.find(e=>e.d==ds)||{}).w??'non pesé'),'Notes : '+(m.note||'-')].filter(Boolean).join('\n')}
+function msg(s){const e=document.createElement('div');e.textContent=s;e.style.cssText='position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ac);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:9';document.body.appendChild(e);setTimeout(()=>e.remove(),1800)}
+function cp(t){try{navigator.clipboard.writeText(t).then(()=>msg('Copié'),()=>{BX=t;render()})}catch(e){BX=t;render()}}
+function cpDay(ds){cp(sumDay(ds))}
+const AI=['Fruits et légumes','Boucherie et volaille','Poissonnerie','Charcuterie et traiteur','Crémerie et œufs','Épicerie'];
+const AX={poulet:1,dinde:1,'porc maigre':1,'bœuf maigre':1,veau:1,cabillaud:2,colin:2,saumon:2,'merlu ou lieu':2,crevettes:2,'jambon blanc dégraissé':3,bresaola:3,'œufs':4,'fromage blanc 0%':4,'skyr ou yaourt 0%':4,'thon nature':5};
+function qty(n,g){return n=='œufs'?Math.round(g/60)+' œufs':n=='skyr ou yaourt 0%'?Math.round(g/125)+' pots':n=='pomme ou poire'?Math.round(g/150)+' pièces':g>=1000?(g/1000).toFixed(2).replace('.',',')+' kg':g+' g'}
+function tcl(k,v){S.cl[k]=v;save()}
+function shopView(){const days=[...Array(7)].map((_,i)=>iso(add(wk,i))).filter(d=>S.ph[d]&&S.m[d]&&S.m[d].d!=null);
+ if(!days.length)return '<div class="cd"><small>Choisis la phase des jours dans Menus : la liste se crée à partir des repas de la semaine affichée.</small></div>';
+ const T={},put=(n,g)=>{T[n]=(T[n]||0)+g};
+ days.forEach(d=>{const m=S.m[d];['d','n'].forEach(s=>RAW[m[s]].it.forEach((x,i)=>put(x.f,m.x&&m.x[s+i]!=null?m.x[s+i]:x.g)));put('skyr ou yaourt 0%',125);if(PH[S.ph[d]].f)put('pomme ou poire',150)});
+ const B=[['ail, citron, herbes',0],["son d'avoine",5],['café, thé',5],['moutarde, cornichons, vinaigre',5],['chocolat noir Nestlé Dessert',5],["compote d'abricot Andros",5]],col=AI.map(()=>[]);
+ Object.entries(T).forEach(([n,g])=>col[AX[n]??0].push([n,qty(n,g)]));B.forEach(([n,a])=>col[a].push([n,'']));
+ const wkk=iso(wk);SH=mkShop(days,col,wkk);
+ return `<div class="cd"><b>Courses du ${fr(wk)} au ${fr(add(wk,6))}</b><br><small>${days.length} jour(s) planifié(s). Quantités additionnées repas par repas.</small><button class="pri" style="width:100%;margin-top:6px" onclick="cpShop()">Copier la liste (texte + JSON)</button></div>`+AI.map((a,i)=>col[i].length?`<div class="cd"><b>${a}</b>${col[i].sort((x,y)=>x[0]<y[0]?-1:1).map(([n,q])=>{const k=wkk+'|'+n;return `<label class="ck"><input type="checkbox" data-k="${esc(k)}"${S.cl[k]?' checked':''} onchange="tcl(this.dataset.k,this.checked)"> ${n}${q?' : '+q:''}</label>`}).join('')}</div>`:'').join('')}
+const REC=`Sors le poulet 10 min avant la cuisson et sale-le légèrement;Chauffe une poêle antiadhésive sans matière grasse à feu moyen;Cuis le blanc 6 à 7 min par face jusqu'à ce que le jus soit clair;Arrose de citron et parsème d'herbes hors du feu#Se garde 3 jours au frigo, bon froid en gamelle.
+Bats les œufs avec sel, poivre et herbes;Coupe le jambon en lanières;Verse les œufs dans une poêle antiadhésive chaude et ajoute le jambon;Laisse prendre 2 min puis plie l'omelette#À manger tout de suite, c'est un des plus rapides.
+Cuis les œufs 10 min dans l'eau bouillante puis refroidis-les;Égoutte le thon et émiette-le;Écale les œufs et coupe-les en quartiers;Assaisonne avec moutarde, citron et poivre#Les œufs durs peuvent être cuits la veille.
+Préchauffe le four à 180 °C;Dépose le pavé sur du papier cuisson avec citron, sel et herbes;Ferme en papillote;Enfourne 15 à 20 min selon l'épaisseur#Cuis plusieurs pavés d'un coup pour la gamelle, 2 jours au frigo.
+Sèche le filet et sale-le;Chauffe une poêle antiadhésive à feu moyen;Cuis 3 à 4 min par face;Ajoute l'ail haché et le persil en fin de cuisson#Le colin cuit vite, ne le laisse pas dessécher.
+Aplatis légèrement l'escalope;Assaisonne avec sel, poivre et herbes;Fais griller à la poêle antiadhésive 4 à 5 min par face;Vérifie que le centre n'est plus rosé#Prête en 10 min, idéal avant le poste.
+Sors le steak 10 min avant;Chauffe fortement une poêle antiadhésive;Saisis 2 min par face pour une cuisson à point;Sale et poivre après cuisson, laisse reposer 2 min#Ne pique pas la viande pour garder le jus.
+Assaisonne l'escalope avec sel et poivre;Cuis-la 3 à 4 min par face dans une poêle antiadhésive;Retire-la et déglace avec un filet d'eau et une cuillère de moutarde;Remets la viande 1 min dans la sauce#Variante : ajoute de l'échalote ciselée pendant la cuisson.
+Décongèle les crevettes si besoin et sèche-les;Fais chauffer une poêle antiadhésive;Cuis les crevettes 2 à 3 min par face;Ajoute l'ail haché, le citron et le persil juste avant de servir#Ne les cuis pas trop, elles deviennent sèches.
+Mélange le fromage blanc avec herbes, sel et poivre;Ajoute un peu d'ail ou d'échalote haché;Dispose la bresaola dans l'assiette;Sers avec le fromage blanc#Repas froid sans cuisson, 5 min.
+Préchauffe le four à 180 °C;Assaisonne le rôti avec sel, poivre, ail et herbes;Enfourne 35 à 40 min, jusqu'à un jus clair;Laisse reposer 10 min avant de trancher#Fais-le le week-end et tranche pour 3 repas, 3 jours au frigo.
+Préchauffe le four à 180 °C;Dépose le pavé sur du papier cuisson avec citron et herbes;Enfourne 12 à 15 min;La chair doit se détacher à la fourchette#Mieux vaut le cuire le jour même, il se réchauffe mal.
+Préchauffe le four à 180 °C;Place le filet sur du papier cuisson avec citron, sel et herbes;Ferme la papillote;Enfourne 15 à 20 min#Fais 2 filets d'un coup, 2 jours au frigo.
+Coupe le brocoli en petits bouquets et cuis-les 5 min à la vapeur;Coupe le poulet en dés;Fais-le dorer 6 à 7 min dans une poêle antiadhésive;Ajoute le brocoli et l'ail haché, mélange 2 min avec un filet d'eau#Idéal en batch, 3 jours au frigo.
+Fais revenir champignons émincés et épinards dans une poêle antiadhésive jusqu'à évaporation de l'eau;Bats les œufs avec sel et poivre;Verse-les sur les légumes;Laisse prendre 2 à 3 min et plie#Les légumes peuvent être cuits la veille.
+Cuis l'œuf dur 10 min;Coupe les tomates en quartiers;Mets la salade, les tomates et le thon égoutté;Ajoute l'œuf et assaisonne avec vinaigre, moutarde et herbes#Sans cuisson, 10 min.
+Fais revenir l'ail dans une casserole avec un peu d'eau;Ajoute les courgettes en rondelles et couvre d'eau;Cuis 15 min puis mixe;Ajoute le jambon en lamelles au moment de servir#Se conserve 3 jours et se réchauffe très bien.
+Émince les poivrons et coupe la dinde en lanières;Fais dorer la dinde 5 min dans une poêle antiadhésive;Ajoute les poivrons et couvre;Laisse cuire 10 min en remuant, avec un filet d'eau si ça accroche#Bonne en gamelle, 2 jours au frigo.
+Coupe le bœuf en dés et émince les champignons;Fais dorer le bœuf 5 min dans une poêle antiadhésive;Ajoute les champignons et un peu d'eau;Mijote à couvert 15 min puis sale et poivre#Meilleur le lendemain, 3 jours au frigo.
+Cuis les haricots verts 8 à 10 min à la vapeur;Cuis le cabillaud au four 15 min à 180 °C avec du citron;Assemble le tout;Assaisonne avec citron, sel, poivre et persil#Les haricots peuvent être cuits à l'avance.
+Casse le bas des asperges et cuis-les 8 min à la vapeur;Fais sauter les crevettes 2 à 3 min dans une poêle antiadhésive;Ajoute les asperges et l'ail haché;Termine avec du citron#À manger tout de suite, les asperges ramollissent.
+Coupe le veau en morceaux et le chou-fleur en bouquets;Fais dorer le veau 5 min dans une cocotte antiadhésive;Ajoute le chou-fleur, de l'eau à mi-hauteur, sel, poivre et herbes;Mijote à couvert 25 min#Parfait pour le batch, 3 jours au frigo.
+Cuis les crevettes 2 min dans une poêle antiadhésive ou décongèle-les;Émince les endives et les radis;Mélange le tout;Assaisonne avec citron, moutarde et herbes#Sans cuisson si les crevettes sont déjà cuites.
+Émince le chou et le céleri;Couvre d'eau avec sel et poivre et cuis 20 min;Ajoute le jambon en lamelles hors du feu;Mixe en partie selon la texture voulue#Se conserve 3 à 4 jours, bonne en gamelle chaude.
+Fais tomber les épinards dans une poêle antiadhésive avec l'ail;Sale et poivre;Cuis le colin 3 à 4 min par face dans une autre poêle;Pose le colin sur les épinards avec du citron#Les épinards perdent beaucoup d'eau, prévois-en large.
+Coupe les tomates et l'oignon;Fais dorer le poulet en morceaux 5 min dans une cocotte antiadhésive;Ajoute tomates, oignon, sel, poivre et herbes;Mijote à couvert 20 min#Se conserve 3 jours, le goût s'améliore.
+Émince les endives;Mélange avec la salade et la bresaola;Assaisonne avec vinaigre, moutarde et citron;Ajoute du poivre#Sans cuisson, 10 min.
+Cuis le brocoli 6 à 8 min à la vapeur;Cuis le saumon à la poêle antiadhésive 3 à 4 min par face;Dresse avec le brocoli;Ajoute citron, sel et poivre#Le saumon est meilleur cuit le jour même.`.split('\n');
+function rec(i){const[a,b]=REC[i].split('#');return `<details><summary>Recette</summary><ol>${a.split(';').map(s=>`<li>${s}</li>`).join('')}</ol><small>${b}</small></details>`}
+let SH=null;
+function mkShop(days,col,wkk){const ing=(m,s)=>RAW[m[s]].it.map((x,i)=>({aliment:x.f,g:m.x&&m.x[s+i]!=null?m.x[s+i]:x.g}));
+ return{semaine_du:wkk,semaine_au:iso(add(wk,6)),jours:days.map(d=>{const m=S.m[d];return{date:d,phase:PH[S.ph[d]].n,poste:{AM:'matin',PM:'après-midi',OFF:'repos'}[shift(parse(d))],dejeuner:{recette:RAW[m.d].n,ingredients:ing(m,'d')},diner:{recette:RAW[m.n].n,ingredients:ing(m,'n')}}}),courses:AI.flatMap((a,i)=>col[i].map(([n,q])=>({rayon:a,article:n,quantite:q,coche:!!S.cl[wkk+'|'+n]})))}}
+function cpShop(){const h=SH;if(!h)return;const t=['Liste de courses du '+h.semaine_du+' au '+h.semaine_au].concat(AI.map(a=>{const l=h.courses.filter(c=>c.rayon==a);return l.length?a+' :\n'+l.map(c=>'- '+c.article+(c.quantite?' : '+c.quantite:'')+(c.coche?' (pris)':'')).join('\n'):''}).filter(Boolean),['Menus :'+h.jours.map(j=>'\n'+j.date+' ('+j.phase+') déjeuner : '+j.dejeuner.recette+', dîner : '+j.diner.recette).join('')]).join('\n\n');cp(t+'\n\nJSON :\n'+JSON.stringify(h))}
+function mxs(k,v){S.mx[k]=Math.max(0,parseInt(v)||0);save();render()}
+function imp(){try{const o=JSON.parse($('#imp').value);if(!o||typeof o!='object')throw 0;S=Object.assign({ph:{},m:{},w:[],st:97,tg:80,mx:{c:0,s:0},cl:{}},o);save();msg('Restauré');render()}catch(e){msg('Sauvegarde invalide')}}
+function dataView(){return `<div class="cd"><b>Plafonds quotidiens des craquages</b><div class="wk" style="margin-top:6px"><label class="mu">Carreaux de chocolat<br><input type="number" min="0" value="${S.mx.c||''}" placeholder="aucun" onchange="mxs('c',this.value)" style="width:90px"></label><label class="mu">Cuillères de compote<br><input type="number" min="0" value="${S.mx.s||''}" placeholder="aucun" onchange="mxs('s',this.value)" style="width:90px"></label></div></div><div class="cd"><b>Sauvegarde</b><br><small>Les données restent dans ce navigateur. Copie la sauvegarde pour la conserver ou la restaurer sur un autre appareil.</small><button class="pri" style="width:100%;margin-top:6px" onclick="cp(JSON.stringify(S))">Copier la sauvegarde</button><textarea id="imp" rows="4" style="width:100%;margin-top:8px;font:inherit;background:var(--cd);color:var(--tx);border:1px solid var(--bd);border-radius:8px" placeholder="Colle ici une sauvegarde"></textarea><button style="width:100%;margin-top:6px" onclick="imp()">Restaurer</button></div>`}
+function chart(){const W=340,H=230,L=34,R=10,T=12,B=22,pw=W-L-R,ph=H-T-B,p=[S.st,...S.w.map(e=>e.w)],mx=Math.max(...p,S.st),mn=Math.min(...p,S.tg),sc=v=>T+ph*(mx-v)/((mx-mn)||1),x=i=>L+(p.length>1?pw*i/(p.length-1):pw/2),base=T+ph*.86;
+ let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%">`;
+ [mx,mn].forEach(v=>s+=`<line x1="${L}" x2="${W-R}" y1="${sc(v)}" y2="${sc(v)}" stroke="var(--bd)"/><text x="${L-4}" y="${sc(v)+3}" text-anchor="end" font-size="9" fill="var(--mu)">${fm(v)}</text>`);
+ s+=`<line x1="${L}" x2="${W-R}" y1="${sc(S.tg)}" y2="${sc(S.tg)}" stroke="var(--ac)" stroke-dasharray="4 3"/><text x="${W-R}" y="${sc(S.tg)-3}" text-anchor="end" font-size="9" fill="var(--ac)">cible ${fm(S.tg)}</text>`;
+ const dl=p.slice(1).map((v,i)=>Math.round((v-p[i])*1000)),md=Math.max(1,...dl.map(Math.abs));
+ dl.forEach((g,i)=>{if(!g)return;const h=Math.abs(g)/md*ph*.16,xx=x(i+1);s+=`<rect x="${xx-6}" y="${g<0?base-h:base}" width="12" height="${h}" fill="${g<0?'var(--ac)':'var(--rd)'}" opacity=".5"/><text x="${xx}" y="${g<0?base-h-2:base+h+9}" text-anchor="middle" font-size="8" fill="var(--tx)">${g>0?'+':'−'}${Math.abs(g)}</text>`});
+ s+=`<polyline fill="none" stroke="var(--tx)" stroke-width="2" points="${p.map((v,i)=>x(i)+','+sc(v)).join(' ')}"/>`+p.map((v,i)=>`<circle cx="${x(i)}" cy="${sc(v)}" r="3" fill="var(--tx)"/>`).join('');
+ const st=Math.ceil(p.length/7);
+ p.forEach((v,i)=>{if(i%st==0){const d=i?S.w[i-1].d:'';s+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="8" fill="var(--mu)">${i?d.slice(8)+'/'+d.slice(5,7):'départ'}</text>`}});
+ return s+'</svg><small>Courbe : poids en kg. Barres : grammes perdus (vert) ou repris (rouge) à chaque pesée.</small>'}
+function addW(){const d=$('#wd').value,v=parseFloat($('#wv').value);if(!d||!(v>0))return;S.w.push({d,w:v});S.w.sort((a,b)=>a.d<b.d?-1:1);save();render()}
+function delW(i){S.w.splice(i,1);save();render()}
+function cfg(k,v){const n=parseFloat(v);if(n>0)S[k]=n;save();render()}
+function weightView(){const last=S.w.length?S.w[S.w.length-1].w:S.st,tot=S.st-last;
+ const rows=S.w.slice().map((e,i)=>{const pv=i?S.w[i-1].w:S.st,g=Math.round((e.w-pv)*1000);return `<div class="row"><span>${e.d.slice(8)}/${e.d.slice(5,7)}, ${fm(e.w)} kg</span><span style="color:var(--${g<=0?'ac':'rd'})">${g>0?'+':'−'}${Math.abs(g)} g</span><button onclick="delW(${i})" title="Supprimer">✕</button></div>`}).reverse().join('')||'<small>Aucune pesée. Ajoute la première ci-dessus.</small>';
+ return `<div class="cd"><div class="wk"><label class="mu">Poids de départ (kg)<br><input type="number" step="0.1" value="${S.st}" onchange="cfg('st',this.value)" style="width:90px"></label><label class="mu">Poids cible (kg)<br><input type="number" step="0.1" value="${S.tg}" onchange="cfg('tg',this.value)" style="width:90px"></label></div><b style="font-size:22px">${fm(last)} kg</b><br><small>${tot>=0?'Perdu':'Repris'} depuis le départ : ${fm(Math.abs(tot))} kg. Reste ${fm(Math.max(0,last-S.tg))} kg.</small></div><div class="cd">${chart()}</div><div class="cd"><div class="wk"><input type="date" id="wd" value="${iso(new Date())}"><input type="number" step="0.1" id="wv" placeholder="Poids (kg)" style="width:110px"><button class="pri" onclick="addW()">Ajouter</button></div></div><div class="cd">${rows}</div>`}
+function render(){let h;
+ if(tab=='w'){const ds=[...Array(7)].map((_,i)=>add(wk,i));h=`<div class="wk"><button onclick="wk=add(wk,-7);render()" title="Semaine précédente">‹</button><button onclick="wk=sow(new Date());render()" title="Revenir à aujourd'hui"><b>${fr(ds[0])} au ${fr(ds[6])}</b></button><button onclick="wk=add(wk,7);render()" title="Semaine suivante">›</button></div><select class="ph" onchange="setWk(this.value)"><option value="">Appliquer une phase à toute la semaine…</option>${po()}</select><small>${wkC(ds)}</small><div style="height:8px"></div>`+ds.map(day).join('')}
+ else if(tab=='p')h=weightView();else if(tab=='c')h=shopView();else h=dataView();
+ $('#app').innerHTML=(BX?`<div class="cd"><small>Copie ce texte (appui long, tout sélectionner) :</small><textarea id="bxt" readonly rows="8" style="width:100%">${esc(BX)}</textarea><button onclick="BX='';render()">Fermer</button></div>`:'')+h;[['t1','w'],['t3','c'],['t2','p'],['t4','d']].forEach(([i,t])=>$('#'+i).className=tab==t?'on':'');if(BX){const t=$('#bxt');t.focus();t.select();window.scrollTo(0,0)}}
+function go(t){tab=t;render()}
+render();
+</script></body></html>
